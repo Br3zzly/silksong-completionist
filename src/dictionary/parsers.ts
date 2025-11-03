@@ -130,12 +130,14 @@ export function isItemUnlockedInPlayerSave(
       const foundEntry = allEntries.find((x: any) => x.SceneName === sceneName && x.ID === id);
       return { unlocked: Boolean(foundEntry?.Value) };
     },
+
     sceneDataIntShards: ([sceneName, id]: [string, string]) => {
       const sceneData = (saveData as any).sceneData || {};
       const allEntries = sceneData.persistentInts?.serializedList || [];
       const foundEntry = allEntries.find((x: any) => x.SceneName === sceneName && x.ID === id);
       return { unlocked: !foundEntry?.Value };
     },
+
     sceneDataGeo: ([sceneName, id]: [string, string]) => {
       const sceneData = (saveData as any).sceneData || {};
       const allEntries = sceneData.geoRocks?.serializedList || [];
