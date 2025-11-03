@@ -19,7 +19,7 @@ import { silkeaters } from "./categories/silkeaters";
 import { bellhome } from "./categories/bellhome";
 import { materium } from "./categories/materium";
 import { mementos } from "./categories/mementos";
-import { maps } from "./categories/maps";
+import { mappingSupplies } from "./categories/mappingSupplies";
 import { bellways } from "./categories/bellways";
 import { ventricaStations } from "./categories/ventricaStations";
 import { quests } from "./categories/quests";
@@ -46,7 +46,7 @@ export const ALL_TRACKED_CATEGORIES = [
   bellhome,
   materium,
   mementos,
-  maps,
+  mappingSupplies,
   bellways,
   ventricaStations,
   quests,

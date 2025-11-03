@@ -107,6 +107,11 @@ export function isItemUnlockedInPlayerSave(
       return { unlocked: !!foundMaterium?.Data?.IsCollected || !!foundMaterium?.Data?.HasSeenInRelicBoard };
     },
 
+    quill: (quillFlag: string) => {
+      const unlocked = !!playerData[quillFlag];
+      return { unlocked, returnValue: unlocked ? playerData["QuillState"] : 0 };
+    },
+
     quest: (questName: string) => {
       const questEntry = (playerData as any).QuestCompletionData?.savedData?.find((x: any) => x.Name === questName);
       return { unlocked: questEntry?.Data?.IsCompleted ?? false };

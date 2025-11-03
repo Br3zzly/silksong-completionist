@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import type { TabProgressInfo } from "./index";
 import { cn } from "@/utils";
+import { LazyImage } from "@/components/ui";
 
 interface TabProgressProps {
   inShowEverythingMode: boolean;
@@ -8,7 +9,7 @@ interface TabProgressProps {
 }
 
 export function TabProgress({ inShowEverythingMode, progressInfo }: TabProgressProps): ReactElement {
-  const { progressText, isProgressComplete, completedCount, encounteredProgressText } = progressInfo;
+  const { progressText, isProgressComplete, completedCount, encounteredProgressText, quillState } = progressInfo;
 
   const isZeroProgress = completedCount === 0;
 
@@ -33,6 +34,19 @@ export function TabProgress({ inShowEverythingMode, progressInfo }: TabProgressP
   const textColor = textColorMap[colorVariant];
   const borderColor = borderColorMap[colorVariant];
 
+  const getQuillImagePath = (state: number): string => {
+    switch (state) {
+      case 1:
+        return "quills/MapWithWhiteQuill.png";
+      case 2:
+        return "quills/MapWithRedQuill.png";
+      case 3:
+        return "quills/MapWithPurpleQuill.png";
+      default:
+        return "";
+    }
+  };
+
   return (
     <div className={cn("w-full border rounded-b transition-all duration-300", bgColor, textColor, borderColor)}>
       <div className="flex items-center justify-between">
@@ -42,6 +56,15 @@ export function TabProgress({ inShowEverythingMode, progressInfo }: TabProgressP
           {encounteredProgressText && (
             <div className="text-[8px] uppercase font-medium px-2 py-0.5 text-orange-200">
               {encounteredProgressText}
+            </div>
+          )}
+          {quillState && quillState > 0 && (
+            <div className="text-[8px] uppercase font-medium px-2 py-0.5">
+              <LazyImage
+                src={getQuillImagePath(quillState)}
+                alt={`${getQuillImagePath(quillState).replace("quills/MapWith", "").replace(".png", "").replace("Quill", " Quill")}`}
+                className="w-3 h-3"
+              />
             </div>
           )}
         </div>

@@ -1,10 +1,106 @@
-import type { TrackableCategory } from "../types";
+import type { TrackableCategory, NormalizedSection, NormalizedItem } from "../types";
+import { QuillsDescription } from "@/components/features/TabContainer/descriptions";
 
-export const maps: TrackableCategory = {
-  name: "Maps",
-  description: "Area maps that reveal the layouts (and secrets) of different regions in Pharloom.",
+export const mappingSupplies: TrackableCategory = {
+  name: "Mapping Supplies",
+  description: "Area maps (and supplies) that reveal the layouts (and secrets) of different regions in Pharloom.",
   sections: [
     {
+      name: "Quills",
+      descriptionMarkup: (showSpoilers?: boolean, sectionData?: unknown) => (
+        <QuillsDescription
+          showSpoilers={showSpoilers}
+          sectionData={sectionData as NormalizedSection & { items: NormalizedItem[] }}
+        />
+      ),
+      items: [
+        {
+          name: "Quill",
+          whichAct: 1,
+          completionDetails: "Sold by Shakra for 50 Rosaries, initially.",
+          parsingInfo: { type: "quill", internalId: "hasQuill" },
+          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=477852",
+        },
+      ],
+    },
+    {
+      name: "Map Pins",
+      description: "Markers purchased from Shakra to mark key locations on the map.",
+      items: [
+        {
+          name: "Bench Pin",
+          whichAct: 1,
+          completionDetails:
+            "Sold by Shakra for 60 Rosaries. These pins will mark benches and other rest spots on your map.",
+          parsingInfo: { type: "flag", internalId: "hasPinBench" },
+          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=477850",
+        },
+        {
+          name: "Bellway Pins",
+          whichAct: 1,
+          completionDetails: "Sold by Shakra for 60 Rosaries. These pins will mark stations on your map.",
+          parsingInfo: { type: "flag", internalId: "hasPinStag" },
+          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=477850",
+        },
+        {
+          name: "Shell Marker",
+          whichAct: 1,
+          completionDetails:
+            'Sold by Shakra for 40 Rosaries. In Shakra\'s words: "These markers I have modelled after the sheen of my own shell. Perhaps you will think of me when you use them."',
+          parsingInfo: { type: "flag", internalId: "hasMarker_a" },
+          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=477850",
+        },
+        {
+          name: "Vendor Pins",
+          whichAct: 1,
+          completionDetails: "Sold by Shakra for 80 Rosaries. These pins will mark vendors on your map.",
+          parsingInfo: { type: "flag", internalId: "hasPinShop" },
+          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=477904",
+        },
+        {
+          name: "Ring Marker",
+          whichAct: 1,
+          completionDetails:
+            'Sold by Shakra for 40 Rosaries. In Shakra\'s words: "With these I often mark the locations of worthy foes."',
+          parsingInfo: { type: "flag", internalId: "hasMarker_b" },
+          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=477904",
+        },
+        {
+          name: "Hunt Marker",
+          whichAct: 1,
+          completionDetails:
+            'Sold by Shakra for 60 Rosaries. In Shakra\'s words: "The shell of the red-hunters makes for a vivid marker indeed."',
+          parsingInfo: { type: "flag", internalId: "hasMarker_c" },
+          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479060",
+        },
+        {
+          name: "Dark Marker",
+          whichAct: 1,
+          completionDetails:
+            'Sold by Shakra for 90 Rosaries. In Shakra\'s words: "This dark-shell material is cold to the touch, and more resilient than it looks."',
+          parsingInfo: { type: "flag", internalId: "hasMarker_d" },
+          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479054",
+        },
+        {
+          name: "Bronze Marker",
+          whichAct: 1,
+          completionDetails:
+            'Sold by Shakra for 120 Rosaries. In Shakra\'s words: "These I have fashioned from the husks of old bells. A hard task to make, so the cost reflects the extra effort."',
+          parsingInfo: { type: "flag", internalId: "hasMarker_e" },
+          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479054",
+        },
+        {
+          name: "Ventrica Pins",
+          whichAct: 2,
+          completionDetails: "Sold by Shakra for 80 Rosaries. Marks the mysterious transport tubes of The Citadel.",
+          parsingInfo: { type: "flag", internalId: "hasPinTube" },
+          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479054",
+        },
+      ],
+    },
+    {
+      name: "Maps",
+      description: "Maps for various regions in Pharloom, sold by Shakra or found in the world.",
       items: [
         {
           name: "Mosslands",

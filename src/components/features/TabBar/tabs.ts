@@ -45,7 +45,12 @@ export const TAB_GROUPS: Record<TabGroup, TabConfig[]> = {
      */
     // createTab("Caches & Secrets"), // 🚧
   ],
-  exploration: [createTab("Maps"), createTab("Bellways"), createTab("Ventrica Stations"), createTab("Quests")],
+  exploration: [
+    createTab("Mapping Supplies"),
+    createTab("Bellways"),
+    createTab("Ventrica Stations"),
+    createTab("Quests"),
+  ],
   bestiary: [createTab("Unique Spawns"), createTab("Bosses"), createTab("Hunter's Journal")],
 };
 

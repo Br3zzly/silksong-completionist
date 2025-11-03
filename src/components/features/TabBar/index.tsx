@@ -19,6 +19,7 @@ export interface TabProgressInfo {
   completedCount?: number;
   encounteredProgressText?: string;
   sectionNames?: string[];
+  quillState?: number;
 }
 
 export function TabBar({
@@ -85,11 +86,20 @@ export function TabBar({
 
       const sectionNames = Object.keys(category.sections);
 
+      let quillState: number | undefined;
+      if (tab.tabId === "Mapping Supplies") {
+        const [quillItem] = Object.values(category.sections["Quills"]?.act_1 || {});
+        if (quillItem?.saveMeta?.value) {
+          quillState = quillItem.saveMeta.value as number;
+        }
+      }
+
       progressMap.set(tab.tabId, {
         isProgressComplete,
         progressText,
         completedCount: currentTotal,
         sectionNames: sectionNames.length > 1 ? sectionNames : undefined,
+        quillState,
       });
     });
 

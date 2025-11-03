@@ -10,6 +10,7 @@ export type CrestParsingInfo = { type: "crest"; internalId: string };
 export type CollectableParsingInfo = { type: "collectable"; internalId: string };
 export type RelicParsingInfo = { type: "relic"; internalId: string };
 export type MateriumParsingInfo = { type: "materium"; internalId: string };
+export type QuillParsingInfo = { type: "quill"; internalId: string };
 export type QuestParsingInfo = { type: "quest"; internalId: string };
 export type SceneDataBoolParsingInfo = { type: "sceneDataBool"; internalId: [string, string] }; // [scene name, flag name]
 export type SceneDataIntParsingInfo = { type: "sceneDataInt"; internalId: [string, string] }; // [scene name, int name]
@@ -26,6 +27,7 @@ export type ParsingInfo =
   | CollectableParsingInfo
   | RelicParsingInfo
   | MateriumParsingInfo
+  | QuillParsingInfo
   | QuestParsingInfo
   | SceneDataBoolParsingInfo
   | SceneDataIntParsingInfo
@@ -60,7 +62,7 @@ export type CategoryItem = {
 export type CategorySection = {
   name?: string;
   description?: string;
-  descriptionMarkup?: ReactNode | ((showSpoilers?: boolean) => ReactNode);
+  descriptionMarkup?: ReactNode | ((showSpoilers?: boolean, sectionData?: unknown) => ReactNode);
   items: CategoryItem[];
 };
 
@@ -88,7 +90,7 @@ export type NormalizedItem = CategoryItem & {
 export type NormalizedSection = {
   name: string;
   description?: string;
-  descriptionMarkup?: ReactNode | ((showSpoilers?: boolean) => ReactNode);
+  descriptionMarkup?: ReactNode | ((showSpoilers?: boolean, sectionData?: unknown) => ReactNode);
   totalPercent: number;
   totalCount: number;
   act_0: Record<NormalizedItem["name"], NormalizedItem>;
