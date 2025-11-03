@@ -3,7 +3,8 @@ import type { NormalizedSection, NormalizedItem } from "@/dictionary";
 import { getHoverBlurClassNames, cn } from "@/utils";
 
 import { CategoryHeader, SectionHeader, StatusBar, EmptyState } from "./shared";
-import { Table, MapButton } from "@/components/ui";
+import { Table, MapButton, ResponsiveComponent } from "@/components/ui";
+import { MobileContentView } from "./MobileContentView";
 
 export function GenericContent({
   tabLabel,
@@ -54,16 +55,32 @@ export function GenericContent({
 
       {!hasVisibleItems && <EmptyState />}
 
-      {hasVisibleItems &&
-        sectionEntries.map(([sectionName, section]) => (
-          <GenericSectionTable
-            key={sectionName}
-            section={section}
-            sectionsLength={sectionsLength}
-            showSpoilers={showSpoilers ?? false}
-            categoryName={tabLabel || category.name}
-          />
-        ))}
+      {hasVisibleItems && (
+        <ResponsiveComponent
+          mobileComponent={
+            <MobileContentView
+              sectionEntries={sectionEntries}
+              sectionsLength={sectionsLength}
+              showSpoilers={showSpoilers ?? false}
+              categoryName={tabLabel || category.name}
+            />
+          }
+          desktopComponent={
+            <>
+              {sectionEntries.map(([sectionName, section]) => (
+                <GenericSectionTable
+                  key={sectionName}
+                  section={section}
+                  sectionsLength={sectionsLength}
+                  showSpoilers={showSpoilers ?? false}
+                  categoryName={tabLabel || category.name}
+                />
+              ))}
+            </>
+          }
+          breakpoint="md"
+        />
+      )}
     </>
   );
 }

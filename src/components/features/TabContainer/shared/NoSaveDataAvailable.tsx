@@ -63,7 +63,7 @@ export function NoSaveDataAvailable({ variant = "NO_SAVE_FILE" }: NoValidSavePro
         src={!isHovered ? Sherma : ShermaGif}
         alt="Sherma"
         className={cn(
-          "absolute left-1/2 top-1/2 object-contain opacity-60 drop-shadow-[0_0_60px_rgba(59,130,246,0.3)] pointer-events-none hover:opacity-80",
+          "absolute left-1/2 top-1/2 object-contain opacity-60 drop-shadow-[0_0_60px_rgba(59,130,246,0.3)] pointer-events-none hover:opacity-80 hidden md:block",
           !isHovered ? "-translate-y-12 -translate-x-56 w-24 h-24" : "-translate-y-17.25 -translate-x-60 w-32 h-32"
         )}
       />

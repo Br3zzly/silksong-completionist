@@ -5,7 +5,7 @@ export function Footer() {
   return (
     <footer className="relative w-full">
       <div
-        className="absolute inset-0 opacity-60 pointer-events-none"
+        className="absolute inset-0 opacity-60 pointer-events-none hidden md:block"
         style={{
           backgroundImage: `url(${FooterImage})`,
           backgroundSize: "contain",
