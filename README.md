@@ -4,7 +4,7 @@
 
 For all the completionists out there, this app helps you track your in-game progress using your save file.
 
-![Hunter's Journal tracked on Silksong Completionist](./screenshots/journal.png)
+![Mapping Supplies tracked on Silksong Completionist](./screenshots/mapping_supplies.png)
 
 ## ⚙️ Usage
 
@@ -57,7 +57,10 @@ Comprehensively tracks everything that contributes to 100% completion in Hollow 
 
 ### 🗺️ Exploration & Navigation
 
-- **Maps**
+- **Mapping Supplies**
+  - Quills
+  - Map Pins
+  - Maps
 - **Bellways**
 - **Ventrica Stations**
 - **Quests**
