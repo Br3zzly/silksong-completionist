@@ -3,7 +3,7 @@ import { QuillsDescription } from "@/components/features/TabContainer/descriptio
 
 export const mappingSupplies: TrackableCategory = {
   name: "Mapping Supplies",
-  description: "Area maps that reveal the layouts (and secrets) of different regions in Pharloom.",
+  description: "Area maps (and supplies) that reveal the layouts (and secrets) of different regions in Pharloom.",
   sections: [
     {
       name: "Quills",
