@@ -12,8 +12,9 @@ export type RelicParsingInfo = { type: "relic"; internalId: string };
 export type MateriumParsingInfo = { type: "materium"; internalId: string };
 export type QuillParsingInfo = { type: "quill"; internalId: string };
 export type QuestParsingInfo = { type: "quest"; internalId: string };
-export type SceneDataBoolParsingInfo = { type: "sceneDataBool"; internalId: [string, string] }; // [scene name, flag name]
-export type SceneDataIntParsingInfo = { type: "sceneDataInt"; internalId: [string, string] }; // [scene name, int name]
+export type SceneDataBoolParsingInfo = { type: "sceneDataBool"; internalId: [string, string] };
+export type SceneDataIntParsingInfo = { type: "sceneDataInt"; internalId: [string, string] };
+export type SceneDataGeoParsingInfo = { type: "sceneDataGeo"; internalId: [string, string] };
 export type SceneVistedParsingInfo = { type: "sceneVisited"; internalId: string };
 export type MementoDepositParsingInfo = { type: "mementoDeposit"; internalId: string };
 export type ParsingInfo =
@@ -31,6 +32,7 @@ export type ParsingInfo =
   | QuestParsingInfo
   | SceneDataBoolParsingInfo
   | SceneDataIntParsingInfo
+  | SceneDataGeoParsingInfo
   | SceneVistedParsingInfo
   | MementoDepositParsingInfo;
 export type ParsingInfoAnyOf = ParsingInfo[];
