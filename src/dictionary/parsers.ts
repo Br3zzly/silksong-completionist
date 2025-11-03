@@ -130,6 +130,12 @@ export function isItemUnlockedInPlayerSave(
       const foundEntry = allEntries.find((x: any) => x.SceneName === sceneName && x.ID === id);
       return { unlocked: Boolean(foundEntry?.Value) };
     },
+    sceneDataGeo: ([sceneName, id]: [string, string]) => {
+      const sceneData = (saveData as any).sceneData || {};
+      const allEntries = sceneData.geoRocks?.serializedList || [];
+      const foundEntry = allEntries.find((x: any) => x.SceneName === sceneName && x.ID === id);
+      return { unlocked: Boolean(foundEntry?.Value) };
+    },
 
     sceneVisited: (sceneName: string) => {
       return { unlocked: !!(playerData as any)?.scenesVisited?.includes(sceneName) };

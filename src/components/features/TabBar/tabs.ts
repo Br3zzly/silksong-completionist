@@ -37,13 +37,7 @@ export const TAB_GROUPS: Record<TabGroup, TabConfig[]> = {
     createTab("Bellhome"),
     createTab("Materium"),
     createTab("Mementos"),
-    /*
-     ** The intent here is to eventually track the following sections:
-     ** Rosary Stashes
-     ** Shell Shard Fossils
-     ** Breakable Walls
-     */
-    // createTab("Caches & Secrets"), // 🚧
+    createTab("Caches & Secrets"),
   ],
   exploration: [
     createTab("Mapping Supplies"),
