@@ -1,7 +1,9 @@
-export { shuffleArray, formatPercent, formatSecondsToHMS, getActFilterText, toggleActInFilter } from "./general";
+export { downloadFile, shuffleArray, formatPercent, formatSecondsToHMS } from "./general";
 
 export { getHoverBlurClassNames, cn } from "./classNames";
 
-export { computeDictMapWithSaveData } from "./data";
+export { encodeData, decodeData } from "./codec";
+
+export { computeDictMapWithSaveData, getActFilterText, toggleActInFilter } from "./data";
 
 export { getAssetUrl } from "./assets";

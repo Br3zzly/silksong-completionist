@@ -1,7 +1,7 @@
 import type { TrackableCategory } from "../types";
 
-export const quests: TrackableCategory = {
-  name: "Quests",
+export const tasks: TrackableCategory = {
+  name: "Tasks",
   description: "Objectives and Wishes undertaken by Hornet throughout her journey across Pharloom.",
   sections: [
     {

@@ -63,7 +63,7 @@ Comprehensively tracks everything that contributes to 100% completion in Hollow 
   - Maps
 - **Bellways**
 - **Ventrica Stations**
-- **Quests**
+- **Tasks** (a.k.a. Quests)
 
 ### 💪 Bestiary
 

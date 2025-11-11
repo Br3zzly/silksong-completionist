@@ -12,14 +12,16 @@ interface TabBarProps {
   hasUploadedSaveData: boolean;
 }
 
-export interface TabProgressInfo {
-  isProgressComplete: boolean;
-  progressText: string;
-  encounteredCount?: number;
-  completedCount?: number;
-  encounteredProgressText?: string;
+export interface TabInfo {
+  progress: {
+    isProgressComplete: boolean;
+    progressText: string;
+    encounteredCount?: number;
+    completedCount?: number;
+    encounteredProgressText?: string;
+    quillState?: number;
+  };
   sectionNames?: string[];
-  quillState?: number;
 }
 
 export function TabBar({
@@ -31,16 +33,29 @@ export function TabBar({
 }: TabBarProps) {
   // Calculate progress for all tabs once at TabBar level
   const tabProgressMap = useMemo(() => {
-    if (!inShowEverythingMode && !dictMapWithSaveData) return new Map<TabId, TabProgressInfo>();
+    const WIP_TABS = ["Caches & Secrets"];
 
-    const progressMap = new Map<TabId, TabProgressInfo>();
+    if (!inShowEverythingMode && !dictMapWithSaveData) return new Map<TabId, TabInfo>();
 
-    // Iterate through all groups and their tabs
+    const tabInfoMap = new Map<TabId, TabInfo>();
+
     (Object.values(TAB_GROUPS) as (typeof TAB_GROUPS)[TabGroup][]).flat().forEach(tab => {
       if (!tab.hasProgress) return;
 
       const category = dictMapWithSaveData?.allItems[tab.tabId];
-      if (!category) return;
+      if (!category || WIP_TABS.includes(category.name)) {
+        const wipTabProgress: TabInfo["progress"] = {
+          completedCount: -1,
+          progressText: "🚧",
+          isProgressComplete: false,
+        };
+
+        tabInfoMap.set(tab.tabId, {
+          progress: wipTabProgress,
+        });
+
+        return;
+      }
 
       // Special handling for Hunter's Journal
       if (tab.tabId === "Hunter's Journal" && category.saveMeta?.journalMeta) {
@@ -51,12 +66,14 @@ export function TabBar({
         const encounteredProgressText =
           !inShowEverythingMode && encountered !== completed ? `+${encountered - completed} Encountered` : undefined;
 
-        progressMap.set(tab.tabId, {
-          isProgressComplete,
-          progressText,
-          completedCount: completed,
-          encounteredCount: encountered,
-          encounteredProgressText,
+        tabInfoMap.set(tab.tabId, {
+          progress: {
+            isProgressComplete,
+            progressText,
+            completedCount: completed,
+            encounteredCount: encountered,
+            encounteredProgressText,
+          },
         });
 
         return;
@@ -94,16 +111,18 @@ export function TabBar({
         }
       }
 
-      progressMap.set(tab.tabId, {
-        isProgressComplete,
-        progressText,
-        completedCount: currentTotal,
+      tabInfoMap.set(tab.tabId, {
+        progress: {
+          isProgressComplete,
+          progressText,
+          completedCount: currentTotal,
+          quillState,
+        },
         sectionNames: sectionNames.length > 1 ? sectionNames : undefined,
-        quillState,
       });
     });
 
-    return progressMap;
+    return tabInfoMap;
   }, [dictMapWithSaveData, inShowEverythingMode]);
 
   const groupedTabs = useMemo(() => {
@@ -127,7 +146,7 @@ export function TabBar({
                   tab={tab}
                   isActive={tab.tabId === activeTab}
                   onSelect={onSelect}
-                  progressInfo={tabProgressMap.get(tab.tabId)}
+                  tabInfo={tabProgressMap.get(tab.tabId)}
                   hasUploadedSaveData={hasUploadedSaveData}
                   inShowEverythingMode={inShowEverythingMode}
                   fullWidth={true}

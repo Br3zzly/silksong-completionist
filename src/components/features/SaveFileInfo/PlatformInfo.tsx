@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { Button } from "@/components/ui";
+import { useState, type JSX } from "react";
+import { Button, Separator } from "@/components/ui";
 import { cn } from "@/utils";
 
-import { PLATFORM_OPTIONS, type PlatformId } from "./PlatformOptions";
+import { PLATFORM_OPTIONS, type PlatformId, type PlatformOption } from "./PlatformOptions";
 
 interface PlatformPathProps extends React.HTMLAttributes<HTMLElement> {
   children: React.ReactNode;
@@ -32,10 +32,32 @@ export function PlatformInfo({ onCopyPath }: PlatformInfoProps) {
 
   const activePlatform = PLATFORM_OPTIONS.find(platform => platform.id === activePlatformId) ?? PLATFORM_OPTIONS[0];
 
-  const handleCopyPath = () => {
+  const handleCopyPath = (activePlatform: PlatformOption) => {
     onCopyPath(activePlatform.saveFilePath);
     setCopiedId(activePlatform.id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const platformInfoMarkup = (
+    activePlatform: PlatformOption,
+    handleCopyPath: (activePlatform: PlatformOption) => void,
+    customHeaderLabel?: string
+  ): JSX.Element => {
+    return (
+      <div className="space-y-3">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {customHeaderLabel ?? "Save File Location"}
+            </h3>
+            {copiedId === activePlatform.id && <span className="text-xs text-green-400">✓ Copied!</span>}
+          </div>
+          <PlatformPath onClick={() => handleCopyPath(activePlatform)}>{activePlatform.saveFilePath}</PlatformPath>
+        </div>
+
+        {activePlatform.note && <p className="text-xs text-gray-400 leading-relaxed">{activePlatform.note}</p>}
+      </div>
+    );
   };
 
   return (
@@ -64,17 +86,17 @@ export function PlatformInfo({ onCopyPath }: PlatformInfoProps) {
         })}
       </div>
 
-      <div className="space-y-3">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Save file Location</h3>
-            {copiedId === activePlatform.id && <span className="text-xs text-green-400">✓ Copied!</span>}
-          </div>
-          <PlatformPath onClick={handleCopyPath}>{activePlatform.saveFilePath}</PlatformPath>
-        </div>
+      <Separator className="my-8" />
 
-        {activePlatform.note && <p className="text-xs text-gray-400 leading-relaxed">{activePlatform.note}</p>}
-      </div>
+      {platformInfoMarkup(activePlatform, handleCopyPath)}
+      {activePlatform.sections?.map(section => (
+        <>
+          <Separator key={section.id} className="my-8" />
+          <div key={section.id}>
+            {platformInfoMarkup(section, handleCopyPath, `${section.label} · Save File Location`)}
+          </div>
+        </>
+      ))}
     </div>
   );
 }

@@ -24,7 +24,12 @@ export function SaveFileInfo({ onCopyPath }: SaveFileInfoProps) {
         </Button>
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Where can I find my save file?">
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Where can I find my save file?"
+        className="min-h-[600px]"
+      >
         <PlatformInfo onCopyPath={onCopyPath} />
       </Modal>
     </>

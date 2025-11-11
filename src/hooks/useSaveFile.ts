@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import type { DragEvent } from "react";
 
-import { decodeSave, encodeSave, downloadFile } from "../services/decryptor";
+import { decodeData, encodeData, downloadFile } from "@/utils";
 
 export interface SaveFileObj {
   state: {
@@ -89,7 +89,7 @@ export function useSaveFile() {
       setJsonText("");
       try {
         const data = new Uint8Array(e.target.result as ArrayBuffer);
-        const json = decodeSave(data);
+        const json = decodeData(data);
         const parsedJson = JSON.parse(json);
 
         const pretty = JSON.stringify(parsedJson, null, 2);
@@ -124,7 +124,7 @@ export function useSaveFile() {
   }, []);
 
   const saveEncrypted = useCallback(() => {
-    const encoded = encodeSave(jsonText);
+    const encoded = encodeData(jsonText);
     downloadFile(encoded, fileName || "save.dat");
   }, [jsonText, fileName]);
 

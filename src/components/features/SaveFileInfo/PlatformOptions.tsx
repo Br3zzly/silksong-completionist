@@ -8,6 +8,7 @@ export type PlatformOption = {
   icon: string;
   saveFilePath: string;
   note?: ReactNode;
+  sections?: PlatformOption[];
 };
 
 const genericNote = (
@@ -29,6 +30,28 @@ const genericNote = (
   </>
 );
 
+const gamePassNote = (
+  <>
+    <span>
+      You'll find two folders inside the <span className="text-orange-400 font-mono">wgs</span> folder. Open the one
+      that's not named <span className="text-orange-400 font-mono">t</span>, and you'll find more folders within that
+      folder. Your save files should be in these folders.
+      <br />
+      <br />
+      Save files have a really long (
+      <a
+        href="https://en.wikipedia.org/wiki/Universally_unique_identifier"
+        className="text-blue-400 hover:text-blue-300 underline"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        GUID-like
+      </a>
+      ) name, and doesn't have a file extension.
+    </span>
+  </>
+);
+
 export const PLATFORM_OPTIONS: PlatformOption[] = [
   {
     id: "Windows",
@@ -36,6 +59,15 @@ export const PLATFORM_OPTIONS: PlatformOption[] = [
     icon: "🪟",
     saveFilePath: "%USERPROFILE%/AppData/LocalLow/Team Cherry/Hollow Knight Silksong/",
     note: genericNote,
+    sections: [
+      {
+        id: "GamePass",
+        label: "Game Pass (PC)",
+        icon: "💻",
+        saveFilePath: "%LOCALAPPDATA%/Packages/TeamCherry.HollowKnightSilksong_y4jvztpgccj42/SystemAppData/wgs/",
+        note: gamePassNote,
+      },
+    ],
   },
   {
     id: "macOS",
@@ -49,20 +81,6 @@ export const PLATFORM_OPTIONS: PlatformOption[] = [
     label: "Linux",
     icon: "🐧",
     saveFilePath: "~/.config/unity3d/Team Cherry/Hollow Knight Silksong/",
-    note: genericNote,
-  },
-  {
-    id: "GamePass",
-    label: "Game Pass (Windows)",
-    icon: "💻",
-    saveFilePath: "%LOCALAPPDATA%/Packages/TeamCherry.Silksong_y4jvztpgccj42/SystemAppData/wgs/",
-    note: "Save file has a really long name and doesn't have a file extension.",
-  },
-  {
-    id: "SteamDeck",
-    label: "Steam Deck (Linux)",
-    icon: "🎮",
-    saveFilePath: "~/.local/share/Team Cherry/Hollow Knight Silksong/",
     note: genericNote,
   },
   {

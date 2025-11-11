@@ -1,15 +1,15 @@
 import type { ReactElement } from "react";
-import type { TabProgressInfo } from "./index";
+import type { TabInfo } from "./index";
 import { cn } from "@/utils";
 import { LazyImage } from "@/components/ui";
 
 interface TabProgressProps {
   inShowEverythingMode: boolean;
-  progressInfo: TabProgressInfo;
+  progress: TabInfo["progress"];
 }
 
-export function TabProgress({ inShowEverythingMode, progressInfo }: TabProgressProps): ReactElement {
-  const { progressText, isProgressComplete, completedCount, encounteredProgressText, quillState } = progressInfo;
+export function TabProgress({ inShowEverythingMode, progress }: TabProgressProps): ReactElement {
+  const { progressText, isProgressComplete, completedCount, encounteredProgressText, quillState } = progress;
 
   const isZeroProgress = completedCount === 0;
 

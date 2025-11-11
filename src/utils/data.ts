@@ -143,3 +143,35 @@ export function computeDictMapWithSaveData(
     completedItemPaths,
   };
 }
+
+export function getActFilterText(
+  actFilter?: Set<1 | 2 | 3>,
+  { returnEmpty = false }: { returnEmpty?: boolean } = {}
+): string {
+  if (returnEmpty) return "";
+
+  if (!actFilter || actFilter.size === 0) {
+    return "from zero ⚠️ Acts";
+  } else if (actFilter.size === 3) {
+    return "from all Acts";
+  } else {
+    const acts = Array.from(actFilter)
+      .sort()
+      .map(act => `Act ${["I", "II", "III"][act - 1]}`);
+    return `from ${acts.join(", ")}`;
+  }
+}
+
+export function toggleActInFilter(actFilter: Set<1 | 2 | 3>, act: 1 | 2 | 3): Set<1 | 2 | 3> {
+  // Prevent toggling an act if it's the only one selected
+  const shouldNotToggleAct = actFilter.size === 1 && actFilter.has(act);
+  if (shouldNotToggleAct) return actFilter;
+
+  const newFilter = new Set(actFilter);
+  if (newFilter.has(act)) {
+    newFilter.delete(act);
+  } else {
+    newFilter.add(act);
+  }
+  return newFilter;
+}

@@ -23,7 +23,7 @@ import { cachesAndSecrets } from "./categories/cachesAndSecrets";
 import { mappingSupplies } from "./categories/mappingSupplies";
 import { bellways } from "./categories/bellways";
 import { ventricaStations } from "./categories/ventricaStations";
-import { quests } from "./categories/quests";
+import { tasks } from "./categories/tasks";
 import { uniqueSpawns } from "./categories/uniqueSpawns";
 import { bosses } from "./categories/bosses";
 import { huntersJournal } from "./categories/huntersJournal";
@@ -51,7 +51,7 @@ export const ALL_TRACKED_CATEGORIES = [
   mappingSupplies,
   bellways,
   ventricaStations,
-  quests,
+  tasks,
   uniqueSpawns,
   bosses,
   huntersJournal,
