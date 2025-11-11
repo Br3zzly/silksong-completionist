@@ -50,8 +50,11 @@ export function TabBar({
           isProgressComplete: false,
         };
 
+        const sectionNames = Object.keys(category?.sections || {});
+
         tabInfoMap.set(tab.tabId, {
           progress: wipTabProgress,
+          sectionNames: sectionNames.length > 1 ? sectionNames : undefined,
         });
 
         return;
