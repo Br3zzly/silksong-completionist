@@ -19,6 +19,7 @@ export interface TabInfo {
     encounteredCount?: number;
     completedCount?: number;
     encounteredProgressText?: string;
+    shortEncounteredProgressText?: string;
     quillState?: number;
   };
   sectionNames?: string[];
@@ -68,6 +69,8 @@ export function TabBar({
         const progressText = inShowEverythingMode ? `${categoryTotal}` : `${completed} / ${categoryTotal}`;
         const encounteredProgressText =
           !inShowEverythingMode && encountered !== completed ? `+${encountered - completed} Encountered` : undefined;
+        const shortEncounteredProgressText =
+          !inShowEverythingMode && encountered !== completed ? `+${encountered - completed} Enc.` : undefined;
 
         tabInfoMap.set(tab.tabId, {
           progress: {
@@ -76,6 +79,7 @@ export function TabBar({
             completedCount: completed,
             encounteredCount: encountered,
             encounteredProgressText,
+            shortEncounteredProgressText,
           },
         });
 
