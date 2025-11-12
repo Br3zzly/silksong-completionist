@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CustomScrollbars } from "@/components/ui";
 import type { TableCell } from "./types";
 
 interface StandardTableProps<T> {
@@ -8,6 +9,7 @@ interface StandardTableProps<T> {
   rowTitle?: string | ((item: T, rowIndex: number) => string | undefined);
   children?: ReactNode;
   isFixedLayout?: boolean;
+  containerHeight?: number;
 }
 
 export function StandardTable<T>({
@@ -17,6 +19,7 @@ export function StandardTable<T>({
   rowTitle,
   children,
   isFixedLayout,
+  containerHeight = 800,
 }: StandardTableProps<T>) {
   const renderTableBody = () => {
     if (!Array.isArray(tableData)) {
@@ -48,24 +51,26 @@ export function StandardTable<T>({
   };
 
   return (
-    <table className={`w-full border-collapse ${isFixedLayout ? "table-fixed" : "table-auto"}`}>
-      {isFixedLayout && (
-        <colgroup>
-          {columns.map((column, index) => (
-            <col key={index} style={column.width ? { width: column.width } : undefined} />
-          ))}
-        </colgroup>
-      )}
-      <thead className="bg-transparent">
-        <tr className="text-left border-b border-gray-600">
-          {columns.map((column, index) => (
-            <th key={index} className={column.headerClassName || "px-2 py-3 text-gray-300 font-medium"}>
-              {column.header || ""}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>{renderTableBody()}</tbody>
-    </table>
+    <CustomScrollbars containerHeight={containerHeight}>
+      <table className={`w-full border-collapse ${isFixedLayout ? "table-fixed" : "table-auto"}`}>
+        {isFixedLayout && (
+          <colgroup>
+            {columns.map((column, index) => (
+              <col key={index} style={column.width ? { width: column.width } : undefined} />
+            ))}
+          </colgroup>
+        )}
+        <thead className="bg-transparent">
+          <tr className="text-left border-b border-gray-600">
+            {columns.map((column, index) => (
+              <th key={index} className={column.headerClassName || "px-2 py-3 text-gray-300 font-medium"}>
+                {column.header || ""}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>{renderTableBody()}</tbody>
+      </table>
+    </CustomScrollbars>
   );
 }

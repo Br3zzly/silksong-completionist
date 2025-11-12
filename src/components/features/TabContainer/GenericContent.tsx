@@ -1,9 +1,14 @@
+import { lazy, Suspense } from "react";
 import type { TabContentProps } from "./types";
 import type { NormalizedSection, NormalizedItem } from "@/dictionary";
 import { getHoverBlurClassNames, cn } from "@/utils";
 
 import { CategoryHeader, SectionHeader, StatusBar, EmptyState } from "./shared";
-import { Table, MapButton } from "@/components/ui";
+
+const Table = lazy(() =>
+  import("@/components/ui").then(module => ({ default: module.Table }))
+) as typeof import("@/components/ui").Table;
+const MapButton = lazy(() => import("@/components/ui").then(module => ({ default: module.MapButton })));
 
 export function GenericContent({
   tabLabel,
@@ -85,6 +90,74 @@ function GenericSectionTable({
 
   // Special case for Quills section - only show header, no table, pass section data for a rich description
   const isQuillsSection = section.name === "Quills";
+
+  const table = (
+    <Table<NormalizedItem>
+      isFixedLayout={true}
+      tableData={items}
+      enableVirtualization={items.length > 100}
+      rowClassName={() =>
+        `border-b border-gray-700 last:border-none group bg-gray-800/30 hover:bg-gray-700/40 transition-colors`
+      }
+      columns={[
+        {
+          width: "56px",
+          cellClassName: "text-center align-middle",
+          renderCell: (item: NormalizedItem) => (
+            <span className={item.saveMeta?.unlocked ? "text-green-400" : "text-red-400"}>
+              {item.saveMeta?.unlocked ? "[x]" : "[ ]"}
+            </span>
+          ),
+        },
+        {
+          width: "56px",
+          headerClassName: "px-2 py-3 text-center text-gray-300 font-medium",
+          cellClassName: "text-center align-middle",
+          renderCell: (item: NormalizedItem) => (
+            <span className="text-xs text-blue-200 mt-1 font-normal">
+              {item.completionPercent ? `+${item.completionPercent}%` : ""}
+            </span>
+          ),
+        },
+        {
+          width: "220px",
+          header: "Name",
+          cellClassName: (item: NormalizedItem) =>
+            `${getHoverBlurClassNames({ shouldBlur: !item.saveMeta?.unlocked && !showSpoilers })}`,
+          renderCell: (item: NormalizedItem) => item.name,
+        },
+        {
+          width: "260px",
+          header: "Details",
+          cellClassName: (item: NormalizedItem) =>
+            `relative min-w-[140px] max-w-[260px] ${getHoverBlurClassNames({ shouldBlur: !item.saveMeta?.unlocked && !showSpoilers })}`,
+          renderCell: (item: NormalizedItem) => item.completionDetails,
+        },
+        {
+          width: "48px",
+          header: "Act",
+          cellClassName: (item: NormalizedItem) =>
+            `w-[48px] text-center ${getHoverBlurClassNames({ shouldBlur: !item.saveMeta?.unlocked && !showSpoilers })}`,
+          renderCell: (item: NormalizedItem) => item.whichAct,
+        },
+        {
+          width: "64px",
+          cellClassName: (item: NormalizedItem) =>
+            `text-center ${getHoverBlurClassNames({ shouldBlur: !item.saveMeta?.unlocked && !showSpoilers })}`,
+          renderCell: (item: NormalizedItem) => {
+            const parts = [categoryName];
+            if (sectionsLength > 1 && section.name) {
+              parts.push(section.name);
+            }
+            parts.push(item.name);
+            const fullName = parts.join(" · ");
+            return <MapButton mapLink={item.mapLink} titleName={fullName} />;
+          },
+        },
+      ]}
+    />
+  );
+
   const tableContainer = !isQuillsSection && (
     <div
       className={cn(
@@ -95,70 +168,7 @@ function GenericSectionTable({
           : sectionsLength > 1 && "rounded-lg" // Multi-section without header - standalone container
       )}
     >
-      <Table<NormalizedItem>
-        isFixedLayout={true}
-        tableData={items}
-        enableVirtualization={items.length > 100}
-        rowClassName={() =>
-          `border-b border-gray-700 last:border-none group bg-gray-800/30 hover:bg-gray-700/40 transition-colors`
-        }
-        columns={[
-          {
-            width: "56px",
-            cellClassName: "text-center align-middle",
-            renderCell: (item: NormalizedItem) => (
-              <span className={item.saveMeta?.unlocked ? "text-green-400" : "text-red-400"}>
-                {item.saveMeta?.unlocked ? "[x]" : "[ ]"}
-              </span>
-            ),
-          },
-          {
-            width: "56px",
-            headerClassName: "px-2 py-3 text-center text-gray-300 font-medium",
-            cellClassName: "text-center align-middle",
-            renderCell: (item: NormalizedItem) => (
-              <span className="text-xs text-blue-200 mt-1 font-normal">
-                {item.completionPercent ? `+${item.completionPercent}%` : ""}
-              </span>
-            ),
-          },
-          {
-            width: "220px",
-            header: "Name",
-            cellClassName: (item: NormalizedItem) =>
-              `${getHoverBlurClassNames({ shouldBlur: !item.saveMeta?.unlocked && !showSpoilers })}`,
-            renderCell: (item: NormalizedItem) => item.name,
-          },
-          {
-            width: "260px",
-            header: "Details",
-            cellClassName: (item: NormalizedItem) =>
-              `relative min-w-[140px] max-w-[260px] ${getHoverBlurClassNames({ shouldBlur: !item.saveMeta?.unlocked && !showSpoilers })}`,
-            renderCell: (item: NormalizedItem) => item.completionDetails,
-          },
-          {
-            width: "48px",
-            header: "Act",
-            cellClassName: (item: NormalizedItem) =>
-              `w-[48px] text-center ${getHoverBlurClassNames({ shouldBlur: !item.saveMeta?.unlocked && !showSpoilers })}`,
-            renderCell: (item: NormalizedItem) => item.whichAct,
-          },
-          {
-            width: "64px",
-            cellClassName: (item: NormalizedItem) =>
-              `text-center ${getHoverBlurClassNames({ shouldBlur: !item.saveMeta?.unlocked && !showSpoilers })}`,
-            renderCell: (item: NormalizedItem) => {
-              const parts = [categoryName];
-              if (sectionsLength > 1 && section.name) {
-                parts.push(section.name);
-              }
-              parts.push(item.name);
-              const fullName = parts.join(" · ");
-              return <MapButton mapLink={item.mapLink} titleName={fullName} />;
-            },
-          },
-        ]}
-      />
+      <Suspense fallback={<div className="text-center py-4 text-gray-400">Loading...</div>}>{table}</Suspense>
     </div>
   );
 

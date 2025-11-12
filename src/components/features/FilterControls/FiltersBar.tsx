@@ -1,4 +1,4 @@
-import { TextWithEmojiButton, PillButton, Separator } from "@/components/ui";
+import { TextWithEmojiButton, PillButton, Separator, CustomScrollbars } from "@/components/ui";
 import { cn, toggleActInFilter } from "@/utils";
 import type { ActFilter } from "./index";
 
@@ -100,55 +100,57 @@ export function FiltersBar({
   return (
     <div
       className={cn(
-        "overflow-hidden transition-all duration-300 ease-in-out",
+        "transition-all duration-300 ease-in-out overflow-hidden",
         isExpanded ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
       )}
     >
-      <div className="bg-gradient-to-br from-gray-800/40 to-gray-800/20 border-2 border-gray-600/30 border-t-0 p-8">
-        <div className="flex items-center justify-between gap-6 text-sm">
-          <div className="w-[200px] flex justify-end">
-            {hasUploadedSaveFile ? (
-              <ShowMissingOnlyButton
-                showMissingOnly={showMissingOnly}
-                onClick={() => onGlobalFilterChange("showMissingOnly", !showMissingOnly)}
+      <div className="bg-gradient-to-br from-gray-800/40 to-gray-800/20 border-2 border-gray-600/30 border-t-0">
+        <CustomScrollbars containerHeight={200}>
+          <div className="p-8 flex items-center justify-between gap-6 text-sm min-w-[720px]">
+            <div className="w-[200px] flex justify-end">
+              {hasUploadedSaveFile ? (
+                <ShowMissingOnlyButton
+                  showMissingOnly={showMissingOnly}
+                  onClick={() => onGlobalFilterChange("showMissingOnly", !showMissingOnly)}
+                  disabled={filtersDisabled}
+                />
+              ) : (
+                <ShowEverythingButton inShowEverythingMode={inShowEverythingMode} onClick={onShowEverythingToggle} />
+              )}
+            </div>
+
+            <Separator orientation="vertical" />
+
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-1.5">
+                {actOptions.map(option => {
+                  const isSelected = actFilter.has(option.value);
+                  return (
+                    <PillButton
+                      key={option.label}
+                      onClick={() => toggleAct(option.value)}
+                      disabled={filtersDisabled}
+                      selected={isSelected}
+                      aria-label={`Toggle ${option.label}`}
+                    >
+                      {option.label}
+                    </PillButton>
+                  );
+                })}
+              </div>
+            </div>
+
+            <Separator orientation="vertical" />
+
+            <div className="w-[200px] flex justify-start">
+              <SpoilersButton
+                showSpoilers={showSpoilers}
+                onClick={() => onGlobalFilterChange("showSpoilers", !showSpoilers)}
                 disabled={filtersDisabled}
               />
-            ) : (
-              <ShowEverythingButton inShowEverythingMode={inShowEverythingMode} onClick={onShowEverythingToggle} />
-            )}
-          </div>
-
-          <Separator orientation="vertical" />
-
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="flex items-center gap-1.5">
-              {actOptions.map(option => {
-                const isSelected = actFilter.has(option.value);
-                return (
-                  <PillButton
-                    key={option.label}
-                    onClick={() => toggleAct(option.value)}
-                    disabled={filtersDisabled}
-                    selected={isSelected}
-                    aria-label={`Toggle ${option.label}`}
-                  >
-                    {option.label}
-                  </PillButton>
-                );
-              })}
             </div>
           </div>
-
-          <Separator orientation="vertical" />
-
-          <div className="w-[200px] flex justify-start">
-            <SpoilersButton
-              showSpoilers={showSpoilers}
-              onClick={() => onGlobalFilterChange("showSpoilers", !showSpoilers)}
-              disabled={filtersDisabled}
-            />
-          </div>
-        </div>
+        </CustomScrollbars>
       </div>
     </div>
   );

@@ -15,8 +15,16 @@ const genericNote = (
   <>
     <span>
       For Steam, your save files (<span className="text-orange-400 font-mono">user_.dat</span>) will be in a sub-folder
-      of your <span className="text-orange-400 font-mono">SteamID</span>. For non-Steam builds, save files will be in a{" "}
-      <span className="text-orange-400 font-mono">default</span> sub-folder. You can also check your{" "}
+      of your <span className="text-orange-400 font-mono">SteamUserID</span>, a.k.a.{" "}
+      <a
+        href="https://steamcommunity.com/my/friends/add"
+        className="text-blue-400 hover:text-blue-300 underline"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Your Friend Code
+      </a>
+      . You can also find your saves on{" "}
       <a
         href="https://store.steampowered.com/account/remotestorageapp/?appid=1030300"
         className="text-blue-400 hover:text-blue-300 underline"
@@ -24,8 +32,12 @@ const genericNote = (
         rel="noopener noreferrer"
       >
         Steam Cloud
-      </a>{" "}
-      saves.
+      </a>
+      , if it is enabled.
+      <br />
+      <br />
+      For non-Steam builds, save files will be in a <span className="text-orange-400 font-mono">default</span>{" "}
+      sub-folder.
     </span>
   </>
 );
@@ -33,12 +45,9 @@ const genericNote = (
 const gamePassNote = (
   <>
     <span>
-      You'll find two folders inside the <span className="text-orange-400 font-mono">wgs</span> folder. Open the one
-      that's not named <span className="text-orange-400 font-mono">t</span>, and you'll find more folders within that
-      folder. Your save files should be in these folders.
-      <br />
-      <br />
-      Save files have a really long (
+      Open a folder with a really-long name inside the <span className="text-orange-400 font-mono">wgs</span> folder,
+      and you'll find even more folders within that folder. Your save files should be in these folders. Save files also
+      have really-long (
       <a
         href="https://en.wikipedia.org/wiki/Universally_unique_identifier"
         className="text-blue-400 hover:text-blue-300 underline"
@@ -47,7 +56,7 @@ const gamePassNote = (
       >
         GUID-like
       </a>
-      ) name, and doesn't have a file extension.
+      ) names, without a file extension.
     </span>
   </>
 );

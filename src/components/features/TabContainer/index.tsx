@@ -137,6 +137,9 @@ export function TabContainer(props: TabContainerProps) {
     onTabFilterChange,
   } = props;
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const prevActiveTabRef = useRef<TabId | null>(null);
+
   const effectiveFilters = useMemo(() => {
     const tabSpecificFilters = activeTab ? tabFilterMap.get(activeTab) : undefined;
     return {
@@ -151,6 +154,20 @@ export function TabContainer(props: TabContainerProps) {
   useEffect(() => {
     cacheRef.current.clear();
   }, [dictMapWithSaveData]);
+
+  // Scroll to TabContainer when activeTab changes (only if not in view)
+  useEffect(() => {
+    if (activeTab && prevActiveTabRef.current !== activeTab && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      // Check if ANY part is visible
+      const isInView = rect.top < window.innerHeight && rect.bottom > 0;
+
+      if (!isInView) {
+        containerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+    prevActiveTabRef.current = activeTab;
+  }, [activeTab]);
 
   const cacheKey = getCacheKey(activeTab, inShowEverythingMode, effectiveFilters);
 
@@ -214,5 +231,9 @@ export function TabContainer(props: TabContainerProps) {
     }
   };
 
-  return <div className="text-white"> {getTabContent(activeTab)} </div>;
+  return (
+    <div ref={containerRef} className="text-white">
+      {getTabContent(activeTab)}
+    </div>
+  );
 }

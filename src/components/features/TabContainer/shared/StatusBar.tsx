@@ -1,4 +1,4 @@
-import { TextWithEmojiButton, PillButton } from "@/components/ui";
+import { TextWithEmojiButton, PillButton, CustomScrollbars } from "@/components/ui";
 import type { ActFilter } from "@/components/features/FilterControls";
 import { getActFilterText, toggleActInFilter } from "@/utils";
 
@@ -63,40 +63,44 @@ export function StatusBar({
   return (
     <div className={hasMultipleSections && hasVisibleItems ? "mb-8" : "mb-0"}>
       <div
-        className={`bg-gray-800/50 border-2 border-gray-600/30 px-4 border-t-0 min-h-[44px] flex items-center ${
+        className={`bg-gray-800/50 border-2 border-gray-600/30 border-t-0 ${
           hasMultipleSections && hasVisibleItems ? "rounded-b-lg" : ""
         }`}
       >
-        <div className="flex items-center justify-between gap-2 w-full">
-          <div className="text-xs text-gray-300 flex items-center gap-1 flex-wrap">
-            <span>Showing</span>
-            {!inShowEverythingMode ? (
-              <TextWithEmojiButton
-                text={showMissingOnly ? missingText : allText}
-                emoji={showMissingOnly ? "🔒" : "🔓"}
-                emojiClassName={`-mt-0.5 -mr-1 ${showMissingOnly ? "" : "ml-0.5"}`}
-                emojiPosition="left"
-                onClick={handleShowMissingOnlyChange}
-              />
-            ) : (
-              <span className="">{allText}</span>
-            )}
-            <span className={`${isJournalCategory ? "-ml-1" : ""}`}>{actText}, with</span>
-            <TextWithEmojiButton
-              text={showSpoilers ? "spoilers shown" : "spoilers blurred"}
-              emoji={showSpoilers ? "😮" : "🤫"}
-              emojiClassName="-mr-1"
-              emojiPosition="left"
-              onClick={handleShowSpoilersChange}
-              disabled={false}
-            />
-            <span className={`${showSpoilers ? "-ml-1" : ""}`}>
-              {showSpoilers ? "!" : "(until you hover over them)."}
-            </span>
-          </div>
+        <CustomScrollbars containerHeight={44}>
+          <div className="px-4 min-h-[44px] flex items-center">
+            <div className="flex items-center justify-between gap-12 w-full min-w-[600px]">
+              <div className="text-xs text-gray-300 flex items-center gap-1 flex-shrink-0">
+                <span>Showing</span>
+                {!inShowEverythingMode ? (
+                  <TextWithEmojiButton
+                    text={showMissingOnly ? missingText : allText}
+                    emoji={showMissingOnly ? "🔒" : "🔓"}
+                    emojiClassName={`-mt-0.5 -mr-1 ${showMissingOnly ? "" : "ml-0.5"}`}
+                    emojiPosition="left"
+                    onClick={handleShowMissingOnlyChange}
+                  />
+                ) : (
+                  <span className="">{allText}</span>
+                )}
+                <span className={`${isJournalCategory ? "-ml-1" : ""}`}>{actText}, with</span>
+                <TextWithEmojiButton
+                  text={showSpoilers ? "spoilers shown" : "spoilers blurred"}
+                  emoji={showSpoilers ? "😮" : "🤫"}
+                  emojiClassName="-mr-1"
+                  emojiPosition="left"
+                  onClick={handleShowSpoilersChange}
+                  disabled={false}
+                />
+                <span className={`${showSpoilers ? "-ml-1" : ""}`}>
+                  {showSpoilers ? "!" : "(until you hover over them)."}
+                </span>
+              </div>
 
-          {tabLabel !== "Hunter's Journal" && actFilterButtons}
-        </div>
+              {tabLabel !== "Hunter's Journal" && actFilterButtons}
+            </div>
+          </div>
+        </CustomScrollbars>
       </div>
     </div>
   );

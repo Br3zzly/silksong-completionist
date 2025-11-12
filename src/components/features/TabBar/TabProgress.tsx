@@ -9,7 +9,14 @@ interface TabProgressProps {
 }
 
 export function TabProgress({ inShowEverythingMode, progress }: TabProgressProps): ReactElement {
-  const { progressText, isProgressComplete, completedCount, encounteredProgressText, quillState } = progress;
+  const {
+    progressText,
+    isProgressComplete,
+    completedCount,
+    encounteredProgressText,
+    shortEncounteredProgressText,
+    quillState,
+  } = progress;
 
   const isZeroProgress = completedCount === 0;
 
@@ -54,9 +61,14 @@ export function TabProgress({ inShowEverythingMode, progress }: TabProgressProps
         <div className="text-[10px] font-medium">{progressText}</div>
         <div className="flex-1 flex justify-end">
           {encounteredProgressText && (
-            <div className="text-[8px] uppercase font-medium px-2 py-0.5 text-orange-200">
-              {encounteredProgressText}
-            </div>
+            <>
+              <div className="hidden md:block text-[8px] uppercase font-medium px-2 py-0.5 text-orange-200">
+                {encounteredProgressText}
+              </div>
+              <div className="block md:hidden text-[8px] uppercase font-medium px-2 py-0.5 text-orange-200">
+                {shortEncounteredProgressText}
+              </div>
+            </>
           )}
           {quillState && quillState > 0 && (
             <div className="text-[8px] uppercase font-medium px-2 py-0.5">

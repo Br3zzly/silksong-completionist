@@ -1,4 +1,4 @@
-import { useState, type ReactElement, type MouseEvent } from "react";
+import { useState, type ReactElement, type PointerEvent } from "react";
 import { createPortal } from "react-dom";
 import type { TabId } from "./tabs";
 import { TabProgress } from "./TabProgress";
@@ -34,17 +34,26 @@ export function TabButton({
 
   const isDisabled = !hasUploadedSaveData && !inShowEverythingMode;
 
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    setMousePos({
-      x: e.clientX,
-      y: e.clientY,
-    });
+  const handlePointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse") {
+      setMousePos({
+        x: e.clientX,
+        y: e.clientY,
+      });
+    }
   };
 
-  const handleMouseEnter = () => setIsHovering(true);
-  const handleMouseLeave = () => {
-    setIsHovering(false);
-    setMousePos(null);
+  const handlePointerEnter = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse") {
+      setIsHovering(true);
+    }
+  };
+
+  const handlePointerLeave = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse") {
+      setIsHovering(false);
+      setMousePos(null);
+    }
   };
 
   const tabButtonStyles = cn(
@@ -62,9 +71,9 @@ export function TabButton({
   return (
     <div
       className={cn("flex flex-col relative", fullWidth ? "flex-1 min-w-[120px]" : "min-w-[120px]")}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onPointerMove={handlePointerMove}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
     >
       <Button
         onClick={() => onSelect(tab.tabId)}
