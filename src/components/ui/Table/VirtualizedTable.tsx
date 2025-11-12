@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { CustomScrollbar } from "./CustomScrollbar";
 import type { TableCell } from "./types";
@@ -22,27 +22,34 @@ export function VirtualizedTable<T>({
   estimatedRowHeight = 40,
   containerHeight = 800,
 }: VirtualizedTableProps<T>) {
-  const parentRef = useRef<HTMLDivElement>(null);
+  const scrollElementRef = useRef<HTMLDivElement | null>(null);
+  const [isReady, setIsReady] = useState(false);
+
+  const handleScrollElementReady = (element: HTMLDivElement) => {
+    scrollElementRef.current = element;
+    setIsReady(true);
+  };
 
   const virtualizer = useVirtualizer({
     count: tableData.length,
-    getScrollElement: () => parentRef.current,
+    getScrollElement: () => scrollElementRef.current,
     estimateSize: () => estimatedRowHeight,
-    overscan: 100,
+    overscan: 10,
   });
 
   const virtualItems = virtualizer.getVirtualItems();
-  const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
+
+  const itemsToRender = isReady ? virtualItems : [];
+  const paddingTop = itemsToRender.length > 0 ? itemsToRender[0].start : 0;
   const paddingBottom =
-    virtualItems.length > 0 ? virtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end : 0;
+    itemsToRender.length > 0 ? virtualizer.getTotalSize() - itemsToRender[itemsToRender.length - 1].end : 0;
 
   const renderRow = (virtualRow: (typeof virtualItems)[number]) => {
     const rowItem = tableData[virtualRow.index];
     const rowIndex = virtualRow.index;
-
     return (
       <tr
-        key={virtualRow.key}
+        key={rowIndex}
         className={typeof rowClassName === "function" ? rowClassName(rowItem, rowIndex) : rowClassName || ""}
         title={typeof rowTitle === "function" ? rowTitle(rowItem, rowIndex) : rowTitle}
       >
@@ -87,41 +94,40 @@ export function VirtualizedTable<T>({
       </table>
 
       {/* Scrollable body with custom scrollbar */}
-      <div style={{ position: "relative" }}>
-        <div
-          ref={parentRef}
-          className="virtual-scroll-container"
-          style={{
-            height: `${containerHeight}px`,
-            overflow: "auto",
-          }}
-        >
-          <table className={`w-full border-collapse ${isFixedLayout ? "table-fixed" : "table-auto"}`}>
-            {isFixedLayout && (
-              <colgroup>
-                {columns.map((column, index) => (
-                  <col key={index} style={column.width ? { width: column.width } : undefined} />
-                ))}
-              </colgroup>
+      <CustomScrollbar containerHeight={containerHeight} onScrollElementReady={handleScrollElementReady}>
+        <table className={`w-full border-collapse ${isFixedLayout ? "table-fixed" : "table-auto"}`}>
+          {isFixedLayout && (
+            <colgroup>
+              {columns.map((column, index) => (
+                <col key={index} style={column.width ? { width: column.width } : undefined} />
+              ))}
+            </colgroup>
+          )}
+          <tbody>
+            {!isReady ? (
+              <tr>
+                <td colSpan={columns.length} style={{ height: `${containerHeight}px` }}>
+                  <div className="flex items-center justify-center h-full text-gray-400">Loading...</div>
+                </td>
+              </tr>
+            ) : (
+              <>
+                {paddingTop > 0 && (
+                  <tr>
+                    <td style={{ height: `${paddingTop}px` }} />
+                  </tr>
+                )}
+                {itemsToRender.map(renderRow)}
+                {paddingBottom > 0 && (
+                  <tr>
+                    <td style={{ height: `${paddingBottom}px` }} />
+                  </tr>
+                )}
+              </>
             )}
-            <tbody>
-              {paddingTop > 0 && (
-                <tr>
-                  <td style={{ height: `${paddingTop}px` }} />
-                </tr>
-              )}
-              {virtualItems.map(renderRow)}
-              {paddingBottom > 0 && (
-                <tr>
-                  <td style={{ height: `${paddingBottom}px` }} />
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <CustomScrollbar scrollContainerRef={parentRef} containerHeight={containerHeight} />
-      </div>
+          </tbody>
+        </table>
+      </CustomScrollbar>
     </div>
   );
 }

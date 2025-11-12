@@ -7,16 +7,6 @@ html {
   background-color: black;
 }
 
-.virtual-scroll-container {
-  scrollbar-width: none; /* Firefox - hide scrollbar */
-  -ms-overflow-style: none; /* IE/Edge - hide scrollbar */
-  scroll-behavior: smooth;
-}
-
-.virtual-scroll-container::-webkit-scrollbar {
-  display: none; /* Chrome/Safari/Opera - hide scrollbar */
-}
-
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
