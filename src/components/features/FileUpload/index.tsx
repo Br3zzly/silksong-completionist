@@ -111,7 +111,7 @@ export function FileUpload({ saveFileObj }: { saveFileObj: SaveFileObj }) {
             e.stopPropagation();
             setIsEditorModalOpen(true);
           }}
-          className="absolute bottom-2 right-2 z-20 w-12 px-2 py-0.5 bg-blue-500/20 hover:bg-blue-500/30 border-blue-500/40 hover:border-blue-400/60 text-blue-300 hover:text-blue-200 flex items-center justify-center gap-1 text-[8px] uppercase"
+          className="absolute bottom-2 right-2 z-20 w-12 px-2 py-0.5 bg-blue-500/20 hover:bg-blue-500/30 border-blue-500/40 hover:border-blue-400/60 text-blue-300 hover:text-blue-200 flex items-center justify-center gap-1 text-[8px] uppercase hidden sm:flex"
           aria-label="Edit save file"
           title="Edit save file"
         >

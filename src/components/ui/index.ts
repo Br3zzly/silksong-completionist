@@ -6,4 +6,4 @@ export { Table } from "./Table";
 export { Modal } from "./Modal";
 export { Separator } from "./Separator";
 export { LazyImage } from "./LazyImage";
-export { CustomScrollbar } from "./CustomScrollbar";
+export { CustomScrollbars } from "./CustomScrollbars";

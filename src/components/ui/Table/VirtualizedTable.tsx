@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { CustomScrollbar } from "@/components/ui";
+import { CustomScrollbars } from "@/components/ui";
 import type { TableCell } from "./types";
 
 interface VirtualizedTableProps<T> {
@@ -72,8 +72,7 @@ export function VirtualizedTable<T>({
   };
 
   return (
-    <div>
-      {/* Header table */}
+    <CustomScrollbars containerHeight={containerHeight} onScrollElementReady={handleScrollElementReady}>
       <table className={`w-full border-collapse ${isFixedLayout ? "table-fixed" : "table-auto"}`}>
         {isFixedLayout && (
           <colgroup>
@@ -91,43 +90,30 @@ export function VirtualizedTable<T>({
             ))}
           </tr>
         </thead>
-      </table>
-
-      {/* Scrollable body with custom scrollbar */}
-      <CustomScrollbar containerHeight={containerHeight} onScrollElementReady={handleScrollElementReady}>
-        <table className={`w-full border-collapse ${isFixedLayout ? "table-fixed" : "table-auto"}`}>
-          {isFixedLayout && (
-            <colgroup>
-              {columns.map((column, index) => (
-                <col key={index} style={column.width ? { width: column.width } : undefined} />
-              ))}
-            </colgroup>
+        <tbody>
+          {!isReady ? (
+            <tr>
+              <td colSpan={columns.length} style={{ height: `${containerHeight}px` }}>
+                <div className="flex items-center justify-center h-full text-gray-400">Loading...</div>
+              </td>
+            </tr>
+          ) : (
+            <>
+              {paddingTop > 0 && (
+                <tr>
+                  <td style={{ height: `${paddingTop}px` }} />
+                </tr>
+              )}
+              {itemsToRender.map(renderRow)}
+              {paddingBottom > 0 && (
+                <tr>
+                  <td style={{ height: `${paddingBottom}px` }} />
+                </tr>
+              )}
+            </>
           )}
-          <tbody>
-            {!isReady ? (
-              <tr>
-                <td colSpan={columns.length} style={{ height: `${containerHeight}px` }}>
-                  <div className="flex items-center justify-center h-full text-gray-400">Loading...</div>
-                </td>
-              </tr>
-            ) : (
-              <>
-                {paddingTop > 0 && (
-                  <tr>
-                    <td style={{ height: `${paddingTop}px` }} />
-                  </tr>
-                )}
-                {itemsToRender.map(renderRow)}
-                {paddingBottom > 0 && (
-                  <tr>
-                    <td style={{ height: `${paddingBottom}px` }} />
-                  </tr>
-                )}
-              </>
-            )}
-          </tbody>
-        </table>
-      </CustomScrollbar>
-    </div>
+        </tbody>
+      </table>
+    </CustomScrollbars>
   );
 }

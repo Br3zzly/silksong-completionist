@@ -53,7 +53,7 @@ export function NoSaveDataAvailable({ variant = "NO_SAVE_FILE" }: NoValidSavePro
     <div className="text-white text-center text-lg relative">
       {/* Invisible hover area */}
       <div
-        className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 w-full h-32 pointer-events-auto cursor-pointer"
+        className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 w-full h-32 pointer-events-auto cursor-pointer hidden sm:block"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleClick}
@@ -63,7 +63,7 @@ export function NoSaveDataAvailable({ variant = "NO_SAVE_FILE" }: NoValidSavePro
         src={!isHovered ? Sherma : ShermaGif}
         alt="Sherma"
         className={cn(
-          "absolute left-1/2 top-1/2 object-contain opacity-60 drop-shadow-[0_0_60px_rgba(59,130,246,0.3)] pointer-events-none hover:opacity-80",
+          "absolute left-1/2 top-1/2 object-contain opacity-60 drop-shadow-[0_0_60px_rgba(59,130,246,0.3)] pointer-events-none hover:opacity-80 hidden sm:block",
           !isHovered ? "-translate-y-12 -translate-x-56 w-24 h-24" : "-translate-y-17.25 -translate-x-60 w-32 h-32"
         )}
       />

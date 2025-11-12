@@ -5,7 +5,7 @@ export function Footer() {
   return (
     <footer className="relative w-full">
       <div
-        className="absolute inset-0 opacity-60 pointer-events-none"
+        className="absolute inset-0 opacity-60 pointer-events-none hidden md:block"
         style={{
           backgroundImage: `url(${FooterImage})`,
           backgroundSize: "contain",
@@ -61,7 +61,9 @@ export function Footer() {
                 <span className="text-sm">{link.icon}</span>
                 <span>{link.label}</span>
               </a>
-              {index < footerConfig.links.length - 1 && <span className="text-gray-700 text-sm">·</span>}
+              {index < footerConfig.links.length - 1 && (
+                <span className="text-gray-700 text-sm hidden sm:inline">·</span>
+              )}
             </div>
           ))}
         </div>
