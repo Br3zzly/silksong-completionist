@@ -110,7 +110,7 @@ function GenericSectionTable({
           ),
         },
         {
-          width: "56px",
+          width: "64px",
           headerClassName: "px-2 py-3 text-center text-gray-300 font-medium",
           cellClassName: "text-center align-middle",
           renderCell: (item: NormalizedItem) => (
