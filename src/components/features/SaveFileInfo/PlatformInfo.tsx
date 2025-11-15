@@ -1,4 +1,4 @@
-import { useState, type JSX } from "react";
+import { useState, type JSX, type ReactNode } from "react";
 import { Button, Separator } from "@/components/ui";
 import { cn } from "@/utils";
 
@@ -33,29 +33,36 @@ export function PlatformInfo({ onCopyPath }: PlatformInfoProps) {
   const activePlatform = PLATFORM_OPTIONS.find(platform => platform.id === activePlatformId) ?? PLATFORM_OPTIONS[0];
 
   const handleCopyPath = (activePlatform: PlatformOption) => {
+    if (!activePlatform.saveFilePath) return;
     onCopyPath(activePlatform.saveFilePath);
     setCopiedId(activePlatform.id);
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const platformInfoMarkup = (
+  const getPlatformInfoMarkup = (
     activePlatform: PlatformOption,
     handleCopyPath: (activePlatform: PlatformOption) => void,
-    customHeaderLabel?: string
-  ): JSX.Element => {
+    customHeaderLabel?: ReactNode
+  ): JSX.Element | null => {
+    if (!activePlatform.saveFilePath) return null;
+
     return (
       <div className="space-y-3">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {customHeaderLabel ?? "Save File Location"}
+            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+              {customHeaderLabel ? (
+                <span>{customHeaderLabel}</span>
+              ) : (
+                <>
+                  <span>{activePlatform.icon}</span> <span>Save File Location</span>
+                </>
+              )}
             </h3>
             {copiedId === activePlatform.id && <span className="text-xs text-green-400">✓ Copied!</span>}
           </div>
           <PlatformPath onClick={() => handleCopyPath(activePlatform)}>{activePlatform.saveFilePath}</PlatformPath>
         </div>
-
-        {activePlatform.note && <p className="text-xs text-gray-400 leading-relaxed">{activePlatform.note}</p>}
       </div>
     );
   };
@@ -86,17 +93,28 @@ export function PlatformInfo({ onCopyPath }: PlatformInfoProps) {
         })}
       </div>
 
-      <Separator className="my-8" />
+      {activePlatform.saveFilePath && <Separator className="my-8" />}
 
-      {platformInfoMarkup(activePlatform, handleCopyPath)}
-      {activePlatform.sections?.map(section => (
-        <>
-          <Separator key={section.id} className="my-8" />
-          <div key={section.id}>
-            {platformInfoMarkup(section, handleCopyPath, `${section.label} · Save File Location`)}
-          </div>
-        </>
+      {getPlatformInfoMarkup(activePlatform, handleCopyPath)}
+      {activePlatform.sections?.map((section, index) => (
+        <div key={section.id}>
+          <Separator className={index === 0 ? "my-8" : "my-4 hidden"} />
+          {getPlatformInfoMarkup(
+            section,
+            handleCopyPath,
+            <>
+              <span>{section.icon}</span> <span>{section.label}</span>
+              {/* <span>{section.label} · Save File Location</span> */}
+            </>
+          )}
+        </div>
       ))}
+      {activePlatform.note && (
+        <>
+          <Separator className="my-4" />
+          <p className="text-xs text-gray-400 leading-relaxed">{activePlatform.note}</p>
+        </>
+      )}
     </div>
   );
 }

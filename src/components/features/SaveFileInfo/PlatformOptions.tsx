@@ -1,17 +1,17 @@
 import { type ReactNode } from "react";
 
-export type PlatformId = "Windows" | "macOS" | "Linux" | "GamePass" | "SteamDeck" | "Switch";
+export type PlatformId = "PC" | "Windows" | "macOS" | "Linux" | "GamePass" | "Switch";
 
 export type PlatformOption = {
   id: PlatformId;
   label: string;
   icon: string;
-  saveFilePath: string;
-  note?: ReactNode;
+  saveFilePath?: string;
   sections?: PlatformOption[];
+  note?: ReactNode;
 };
 
-const genericNote = (
+const pcNote = (
   <>
     <span>
       For Steam, your save files (<span className="text-orange-400 font-mono">user_.dat</span>) will be in a sub-folder
@@ -36,6 +36,8 @@ const genericNote = (
       , if it is enabled.
       <br />
       <br />
+    </span>
+    <span>
       For non-Steam builds, save files will be in a <span className="text-orange-400 font-mono">default</span>{" "}
       sub-folder.
     </span>
@@ -58,39 +60,57 @@ const gamePassNote = (
       </a>
       ) names, without a file extension.
     </span>
+    <br />
+    <br />
+    <span>
+      If you're having trouble locating specific Game Pass save file(s), try{" "}
+      <a
+        href="https://github.com/saiki-k/wgs-inspector"
+        className="text-blue-400 hover:text-blue-300 underline"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        WGS Inspector
+      </a>
+      , an open-source tool that helps you inspect your Game Pass save files, and optionally export them to a readable
+      format.
+    </span>
   </>
 );
 
 export const PLATFORM_OPTIONS: PlatformOption[] = [
   {
-    id: "Windows",
-    label: "Windows",
-    icon: "🪟",
-    saveFilePath: "%USERPROFILE%/AppData/LocalLow/Team Cherry/Hollow Knight Silksong/",
-    note: genericNote,
+    id: "PC",
+    label: "PC (Steam & Others)",
+    icon: "🖥️",
     sections: [
       {
-        id: "GamePass",
-        label: "Game Pass (PC)",
-        icon: "💻",
-        saveFilePath: "%LOCALAPPDATA%/Packages/TeamCherry.HollowKnightSilksong_y4jvztpgccj42/SystemAppData/wgs/",
-        note: gamePassNote,
+        id: "Windows",
+        label: "Windows",
+        icon: "🪟",
+        saveFilePath: "%USERPROFILE%/AppData/LocalLow/Team Cherry/Hollow Knight Silksong/",
+      },
+      {
+        id: "macOS",
+        label: "macOS",
+        icon: "🍎",
+        saveFilePath: "~/Library/Application Support/unity.Team-Cherry.Silksong/",
+      },
+      {
+        id: "Linux",
+        label: "Linux",
+        icon: "🐧",
+        saveFilePath: "~/.config/unity3d/Team Cherry/Hollow Knight Silksong/",
       },
     ],
+    note: pcNote,
   },
   {
-    id: "macOS",
-    label: "macOS",
-    icon: "🍎",
-    saveFilePath: "~/Library/Application Support/unity.Team-Cherry.Silksong/",
-    note: genericNote,
-  },
-  {
-    id: "Linux",
-    label: "Linux",
-    icon: "🐧",
-    saveFilePath: "~/.config/unity3d/Team Cherry/Hollow Knight Silksong/",
-    note: genericNote,
+    id: "GamePass",
+    label: "GamePass (Windows)",
+    icon: "🪟",
+    saveFilePath: "%LOCALAPPDATA%/Packages/TeamCherry.HollowKnightSilksong_y4jvztpgccj42/SystemAppData/wgs/",
+    note: gamePassNote,
   },
   {
     id: "Switch",
@@ -99,14 +119,14 @@ export const PLATFORM_OPTIONS: PlatformOption[] = [
     saveFilePath: "sdmc:/atmosphere/contents/<title-id>/saves/hollow_knight_silksong/",
     note: (
       <>
-        Not a simple process! This requires Homebrew and JKSV. Here's a{" "}
+        Not a simple process! This requires Homebrew and JKSV. Here's a related{" "}
         <a
           className="text-blue-400 hover:text-blue-300 underline"
           href="https://www.reddit.com/r/HollowKnight/comments/1dacmy1/gamesave_from_switch_to_steam/"
           rel="noopener noreferrer"
           target="_blank"
         >
-          Reddit guide
+          Reddit discussion
         </a>
         .
       </>
