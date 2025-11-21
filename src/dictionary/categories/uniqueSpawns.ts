@@ -71,14 +71,14 @@ export const uniqueSpawns: TrackableCategory = {
           whichAct: 1,
           completionDetails:
             'Deep Docks: Found hanging under a floating platform in the long hall beneath the "Swift Step" room.',
-          parsingInfo: { type: "sceneDataInt", internalId: ["Bone_East_03", "Shell Fossil Mimic"] },
+          parsingInfo: { type: "sceneDataInt", internalId: ["Bone_East_03", "Shell Fossil Mimic", -1] },
           mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=480168",
         },
         {
           name: "Shardillard #2",
           whichAct: 1,
           completionDetails: "Greymoor: Found in the secret tunnel beneath the entrance to Styx's room.",
-          parsingInfo: { type: "sceneDataInt", internalId: ["Greymoor_17", "Shell Fossil Mimic"] },
+          parsingInfo: { type: "sceneDataInt", internalId: ["Greymoor_17", "Shell Fossil Mimic", -1] },
           mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479496",
         },
         {
@@ -86,14 +86,14 @@ export const uniqueSpawns: TrackableCategory = {
           whichAct: 1,
           completionDetails:
             "The Marrow: Found in the long room to the right of the Bellway bench, to the left of a magnetite platform.",
-          parsingInfo: { type: "sceneDataInt", internalId: ["Bone_14", "Shell Fossil Mimic"] },
+          parsingInfo: { type: "sceneDataInt", internalId: ["Bone_14", "Shell Fossil Mimic", -1] },
           mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=480160",
         },
         {
           name: "Shardillard #4",
           whichAct: 1,
           completionDetails: "Far Fields: Found on the upper side of a spinal bone platform.",
-          parsingInfo: { type: "sceneDataInt", internalId: ["Bone_East_14", "Shell Fossil Mimic"] },
+          parsingInfo: { type: "sceneDataInt", internalId: ["Bone_East_14", "Shell Fossil Mimic", -1] },
           mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479731",
         },
         {
@@ -101,7 +101,7 @@ export const uniqueSpawns: TrackableCategory = {
           whichAct: 2,
           completionDetails:
             "Sands of Karak: Found near the eastmost bench, go left, drop down and look for a suspicious-looking Shell Shard cache.",
-          parsingInfo: { type: "sceneDataInt", internalId: ["Coral_38", "Shell Fossil Mimic"] },
+          parsingInfo: { type: "sceneDataInt", internalId: ["Coral_38", "Shell Fossil Mimic", -1] },
           mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479213",
         },
         {
@@ -109,7 +109,7 @@ export const uniqueSpawns: TrackableCategory = {
           whichAct: 2,
           completionDetails:
             "The Marrow: Found at the highest point, attached to the top left wall. Only appears after beating Lace in The Cradle.",
-          parsingInfo: { type: "sceneDataInt", internalId: ["Bone_06", "Shell Fossil Mimic AppearVariant"] },
+          parsingInfo: { type: "sceneDataInt", internalId: ["Bone_06", "Shell Fossil Mimic AppearVariant", -1] },
           mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=480162",
         },
       ],
