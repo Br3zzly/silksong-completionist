@@ -124,25 +124,32 @@ export function isItemUnlockedInPlayerSave(
       return { unlocked: Boolean(foundEntry?.Value) };
     },
 
-    sceneDataInt: ([sceneName, id]: [string, string]) => {
+    sceneDataInt: ([sceneName, id, requiredValue]: [string, string, number]) => {
       const sceneData = (saveData as any).sceneData || {};
       const allEntries = sceneData.persistentInts?.serializedList || [];
       const foundEntry = allEntries.find((x: any) => x.SceneName === sceneName && x.ID === id);
-      return { unlocked: Boolean(foundEntry?.Value) };
+      return { unlocked: foundEntry?.Value === requiredValue };
+    },
+
+    sceneDataIntRosaries: ([sceneName, id]: [string, string]) => {
+      const sceneData = (saveData as any).sceneData || {};
+      const allEntries = sceneData.persistentInts?.serializedList || [];
+      const foundEntry = allEntries.find((x: any) => x.SceneName === sceneName && x.ID === id);
+      return { unlocked: foundEntry?.Value === -1 }; // TODO: Verify if -1 is the correct value for acquired rosary caches
     },
 
     sceneDataIntShards: ([sceneName, id]: [string, string]) => {
       const sceneData = (saveData as any).sceneData || {};
       const allEntries = sceneData.persistentInts?.serializedList || [];
       const foundEntry = allEntries.find((x: any) => x.SceneName === sceneName && x.ID === id);
-      return { unlocked: !foundEntry?.Value };
+      return { unlocked: !foundEntry?.Value }; // This seems accurate as preliminary testing suggests that the "Value" is 0 when acquired
     },
 
     sceneDataGeo: ([sceneName, id]: [string, string]) => {
       const sceneData = (saveData as any).sceneData || {};
       const allEntries = sceneData.geoRocks?.serializedList || [];
       const foundEntry = allEntries.find((x: any) => x.SceneName === sceneName && x.ID === id);
-      return { unlocked: !foundEntry?.Value };
+      return { unlocked: !foundEntry?.Value }; // This seems accurate as preliminary testing suggests that the "Value" is 0 when acquired
     },
 
     sceneVisited: (sceneName: string) => {
