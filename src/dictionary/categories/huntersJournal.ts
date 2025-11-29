@@ -124,7 +124,7 @@ export const huntersJournal: TrackableCategory = {
           whichAct: 0,
           completionDetails: "",
           parsingInfo: { type: "journal", internalId: "Bone Goomba Bounce Fly" },
-          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479543",
+          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479074",
           additionalMeta: {
             killsRequired: 15,
             imageAsset: "journal/Skullwing.png",
