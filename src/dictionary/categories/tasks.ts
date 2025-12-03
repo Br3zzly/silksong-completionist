@@ -363,7 +363,7 @@ export const tasks: TrackableCategory = {
           name: "Bellhart's Glory",
           whichAct: 2,
           completionDetails:
-            'Bellhart: On the Wishwall (appears after completing "Restoration of Bellhart" wish, and completing one of several Act 2 prerequisites).',
+            'Bellhart: On the Wishwall (appears after completing "Restoration of Bellhart" wish, and completing one of these in ACT 2 — defeating Cogwork Dancers, obtaining Clawline, or activating Songclave).',
           parsingInfo: { type: "quest", internalId: "Belltown House Mid" },
           mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=478797",
         },
