@@ -31,6 +31,7 @@ export function computeDictMapWithSaveData(
     const categoryFilteredByGameMode: NormalizedCategory = {
       name: category.name,
       description: category.description,
+      descriptionMarkup: category.descriptionMarkup,
       totalPercent: 0,
       totalCount: 0,
       sections: {},
