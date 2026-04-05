@@ -43,7 +43,7 @@ export const bellhome: TrackableCategory = {
         },
         {
           name: "Gramophone",
-          whichAct: 3,
+          whichAct: 2,
           completionDetails:
             "Bellhart: Sold by Frey for 490 Rosaries after giving all Psalm Cylinders to Cardinius. Allows playing Psalm Cylinders at the Bellhome. Music continues playing outside the menu and can be heard from nearby.",
           parsingInfo: { type: "flag", internalId: "BelltownFurnishingGramaphone" },
