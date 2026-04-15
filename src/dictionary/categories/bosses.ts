@@ -374,7 +374,7 @@ export const bosses: TrackableCategory = {
         },
         {
           name: "Voltvyrm",
-          whichAct: 3,
+          whichAct: 2,
           completionDetails: "Can be found in Voltnest within Sands of Karak.",
           parsingInfo: { type: "flag", internalId: "defeatedZapCoreEnemy" },
           mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479223",

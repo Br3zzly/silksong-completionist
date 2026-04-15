@@ -299,7 +299,7 @@ export const tools: TrackableCategory = {
         },
         {
           name: "Volt Filament",
-          whichAct: 3,
+          whichAct: 2,
           completionPercent: 1,
           completionDetails: "Coral Tower (Voltnest): Defeat Voltvyrm.",
           parsingInfo: { type: "tool", internalId: ["Zap Imbuement"] },
