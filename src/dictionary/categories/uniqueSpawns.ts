@@ -178,14 +178,16 @@ export const uniqueSpawns: TrackableCategory = {
           parsingInfo: { type: "sceneDataBool", internalId: ["Dock_04", "Black_Thread_Core"] },
           mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479458",
         },
-        {
-          name: "Void Mass · Deep Docks #3", // Classic Mode only
-          whichAct: 3,
-          completionDetails: "Deep Docks",
-          parsingInfo: { type: "sceneDataBool", internalId: ["Dock_03c", "Black_Thread_Core"] },
-          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=480823",
-          onlyFoundInClassicMode: true,
-        },
+        // Removed "in a recent update" as of 2026-05-06 according to personal
+        // communication with Team Cherry
+        // {
+        //   name: "Void Mass · Deep Docks #3", // Classic Mode only
+        //   whichAct: 3,
+        //   completionDetails: "Deep Docks",
+        //   parsingInfo: { type: "sceneDataBool", internalId: ["Dock_03c", "Black_Thread_Core"] },
+        //   mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=480823",
+        //   onlyFoundInClassicMode: true,
+        // },
         // Hunter's March
         {
           name: "Void Mass · Hunter's March #1",
