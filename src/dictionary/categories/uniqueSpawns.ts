@@ -178,14 +178,30 @@ export const uniqueSpawns: TrackableCategory = {
           parsingInfo: { type: "sceneDataBool", internalId: ["Dock_04", "Black_Thread_Core"] },
           mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479458",
         },
+
+        /*
+         ** The following Void Mass (which was not present in Steel Soul Mode) only appeared in Classic Mode.
+         ** It was removed in one of the game updates leading up to 1.0.3.0000.
+         ** Hat-tip: @RS2-CN3 (for the find), and @cionx (for the sleuthing and details)
+         */
+        // {
+        //   name: "Void Mass · Deep Docks #3", // Classic Mode only
+        //   whichAct: 3,
+        //   completionDetails: "Deep Docks",
+        //   parsingInfo: { type: "sceneDataBool", internalId: ["Dock_03c", "Black_Thread_Core"] },
+        //   mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=480823",
+        //   onlyFoundInClassicMode: true,
+        // },
+
+        // Was incorrectly categorised as a Far Fields (#2) Void Mass, thanks to @cionx (for the find)
         {
-          name: "Void Mass · Deep Docks #3", // Classic Mode only
+          name: "Void Mass · Deep Docks #3",
           whichAct: 3,
           completionDetails: "Deep Docks",
-          parsingInfo: { type: "sceneDataBool", internalId: ["Dock_03c", "Black_Thread_Core"] },
-          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=480823",
-          onlyFoundInClassicMode: true,
+          parsingInfo: { type: "sceneDataBool", internalId: ["Bone_East_05", "Black_Thread_Core"] },
+          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479536",
         },
+
         // Hunter's March
         {
           name: "Void Mass · Hunter's March #1",
@@ -213,18 +229,11 @@ export const uniqueSpawns: TrackableCategory = {
           name: "Void Mass · Far Fields #2",
           whichAct: 3,
           completionDetails: "Far Fields",
-          parsingInfo: { type: "sceneDataBool", internalId: ["Bone_East_05", "Black_Thread_Core"] },
-          mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479536",
-        },
-        {
-          name: "Void Mass · Far Fields #3",
-          whichAct: 3,
-          completionDetails: "Far Fields",
           parsingInfo: { type: "sceneDataBool", internalId: ["Bone_East_17", "Black_Thread_Core"] },
           mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=480172",
         },
         {
-          name: "Void Mass · Far Fields #4",
+          name: "Void Mass · Far Fields #3",
           whichAct: 3,
           completionDetails: "Far Fields",
           parsingInfo: { type: "sceneDataBool", internalId: ["Bone_East_26", "Black_Thread_Core_Citadel"] },

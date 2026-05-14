@@ -372,9 +372,11 @@ export const bosses: TrackableCategory = {
             ],
           },
         },
+        // Voltvyrm is reachable in ACT 2.
+        // https://www.reddit.com/r/Silksong/comments/1s62r2u/wait_volt_filament_was_supposed_to_be_an_act_3/
         {
           name: "Voltvyrm",
-          whichAct: 3,
+          whichAct: 2,
           completionDetails: "Can be found in Voltnest within Sands of Karak.",
           parsingInfo: { type: "flag", internalId: "defeatedZapCoreEnemy" },
           mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479223",

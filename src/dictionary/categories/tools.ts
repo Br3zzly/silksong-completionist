@@ -297,9 +297,11 @@ export const tools: TrackableCategory = {
           parsingInfo: { type: "tool", internalId: ["Thief Claw"] },
           mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479201",
         },
+        // Voltvyrm is reachable in ACT 2.
+        // https://www.reddit.com/r/Silksong/comments/1s62r2u/wait_volt_filament_was_supposed_to_be_an_act_3/
         {
           name: "Volt Filament",
-          whichAct: 3,
+          whichAct: 2,
           completionPercent: 1,
           completionDetails: "Coral Tower (Voltnest): Defeat Voltvyrm.",
           parsingInfo: { type: "tool", internalId: ["Zap Imbuement"] },
