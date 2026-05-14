@@ -128,7 +128,7 @@ export const maskShards: TrackableCategory = {
           whichAct: 2,
           completionPercent: 0.25,
           prereqs: ["Faydown Cloak"],
-          completionDetails: "Wisp Thicket: At the end of a platforming challenge  in the left-most area.",
+          completionDetails: "Wisp Thicket: At the end of a platforming challenge  in the right-most area.",
           parsingInfo: { type: "sceneDataBool", internalId: ["Wisp_07", "Heart Piece"] },
           mapLink: "https://mapgenie.io/hollow-knight-silksong/maps/pharloom?locationIds=479151",
         },
