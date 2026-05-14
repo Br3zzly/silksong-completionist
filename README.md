@@ -29,9 +29,7 @@ Comprehensively tracks everything that contributes to 100% completion in Hollow 
   - Silk Hearts
   - Cloak Abilities _(these don't contribute to 100% completion)_
   - Ancestral Arts
-  - Other (Unique) Abilities
-    - Sylphsong
-    - Everbloom
+  - Other Abilities
 - **Upgrades**
   - Needle Upgrades
   - Tool Pouch Upgrades
