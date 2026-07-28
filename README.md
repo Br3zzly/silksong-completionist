@@ -1,3 +1,35 @@
+
+<div align="right">
+  <details>
+    <summary >🌐 Language</summary>
+    <div>
+      <div align="center">
+        <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=en">English</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=zh-CN">简体中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=zh-TW">繁體中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=ja">日本語</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=ko">한국어</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=hi">हिन्दी</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=th">ไทย</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=fr">Français</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=de">Deutsch</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=es">Español</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=it">Italiano</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=ru">Русский</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=pt">Português</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=nl">Nederlands</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=pl">Polski</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=ar">العربية</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=fa">فارسی</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=tr">Türkçe</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=vi">Tiếng Việt</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=id">Bahasa Indonesia</a>
+        | <a href="https://openaitx.github.io/view.html?user=Br3zzly&project=silksong-completionist&lang=as">অসমীয়া</
+      </div>
+    </div>
+  </details>
+</div>
+
 # 🧵🎵 Silksong Completionist
 
 ### Track your [Hollow Knight: Silksong](https://store.steampowered.com/app/1030300/Hollow_Knight_Silksong/) Progress
