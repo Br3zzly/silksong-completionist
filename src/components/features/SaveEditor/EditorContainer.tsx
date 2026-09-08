@@ -7,7 +7,7 @@ const Editor = lazy(() => import("@monaco-editor/react"));
 
 function EditorStatusBar({ isValidJson }: { isValidJson: boolean }) {
   return (
-    <div className="bg-gray-800/50 border-b-2 border-gray-600/30 px-4 border-t-0 min-h-[44px] flex items-center border-b-0">
+    <div className="bg-gray-800/50 border-gray-600/30 px-4 border-t-0 min-h-[44px] flex items-center border-b-0">
       <div className="flex justify-between items-center text-xs text-gray-300 w-full">
         <p className="text-gray-400">
           Use <span className="font-mono text-blue-400">Ctrl+F</span>
@@ -37,8 +37,7 @@ function EditorResizeHandle({
     <div
       onMouseDown={onMouseDown}
       className={cn(
-        "group h-2 transition-all duration-200 select-none cursor-ns-resize bg-transparent hover:bg-transparent",
-        isDragging ? "bg-transparent" : "bg-transparent"
+        "group h-2 transition-all duration-200 select-none cursor-ns-resize bg-transparent hover:bg-transparent"
       )}
     >
       <div className="h-full flex items-center justify-center pointer-events-none">
@@ -63,12 +62,14 @@ function DownloadButton({
   children: React.ReactNode;
   onClick: () => void;
   className?: string;
+  disabled?: boolean;
+  title?: string;
 }) {
   return (
     <Button
       onClick={onClick}
       className={cn(
-        "bg-gray-700/30 text-gray-400 border border-gray-600/30 hover:border-gray-500/50 hover:text-gray-300 font-semibold py-2 px-4 rounded transition-all duration-200 flex-1 cursor-pointer",
+        "bg-gray-700/30 text-gray-400 border border-gray-600/30 hover:border-gray-500/50 hover:text-gray-300 font-semibold py-2 px-4 rounded transition-all duration-200 flex-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
         className
       )}
       {...props}
@@ -81,7 +82,11 @@ function DownloadButton({
 function DownloadButtons({ saveFileObj }: { saveFileObj: SaveFileObj }) {
   return (
     <div className="flex flex-col sm:flex-row gap-3">
-      <DownloadButton onClick={() => saveFileObj.handlers.saveEncrypted()}>
+      <DownloadButton
+        onClick={() => saveFileObj.handlers.saveEncrypted()}
+        disabled={!saveFileObj.state.canExportEncrypted}
+        title={!saveFileObj.state.canExportEncrypted ? saveFileObj.state.errorMessage : undefined}
+      >
         💾 Download as (encrypted) .dat
       </DownloadButton>
       <DownloadButton onClick={() => saveFileObj.handlers.savePlain()}>📃 Download as (plain) .json</DownloadButton>

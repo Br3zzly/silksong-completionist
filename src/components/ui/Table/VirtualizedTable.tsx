@@ -1,116 +1,78 @@
-import { useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { CustomScrollbars } from "@/components/ui";
-import type { TableCell } from "./types";
-
-interface VirtualizedTableProps<T> {
-  columns: TableCell<T>[];
-  tableData: T[];
-  rowClassName?: string | ((item: T, rowIndex: number) => string);
-  rowTitle?: string | ((item: T, rowIndex: number) => string | undefined);
-  isFixedLayout?: boolean;
-  estimatedRowHeight?: number;
-  containerHeight?: number;
-}
+import { TableHeader, TableRow } from "./Presentation";
+import type { TableProps } from "./types";
 
 export function VirtualizedTable<T>({
   columns,
   tableData,
+  getRowKey,
   rowClassName,
   rowTitle,
   isFixedLayout,
-  estimatedRowHeight = 40,
+  estimatedRowHeight = 56,
   containerHeight = 800,
-}: VirtualizedTableProps<T>) {
-  const scrollElementRef = useRef<HTMLDivElement | null>(null);
-  const [isReady, setIsReady] = useState(false);
-
-  const handleScrollElementReady = (element: HTMLDivElement) => {
-    scrollElementRef.current = element;
-    setIsReady(true);
-  };
-
+}: TableProps<T> & { tableData: T[] }) {
+  const [scrollElement, setScrollElement] = useState<HTMLDivElement | null>(null);
+  const bodyRef = useRef<HTMLTableSectionElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const getItemKey = useCallback((index: number) => getRowKey(tableData[index]), [getRowKey, tableData]);
   const virtualizer = useVirtualizer({
     count: tableData.length,
-    getScrollElement: () => scrollElementRef.current,
+    getScrollElement: () => scrollElement,
+    getItemKey,
     estimateSize: () => estimatedRowHeight,
+    scrollMargin: headerHeight,
     overscan: 10,
   });
+  useLayoutEffect(() => {
+    const header = bodyRef.current?.previousElementSibling;
+    if (!header) return;
+    const measure = () => setHeaderHeight(header.getBoundingClientRect().height);
+    const observer = new ResizeObserver(measure);
+    observer.observe(header);
+    measure();
+    return () => observer.disconnect();
+  }, []);
 
   const virtualItems = virtualizer.getVirtualItems();
-
-  const itemsToRender = isReady ? virtualItems : [];
-  const paddingTop = itemsToRender.length > 0 ? itemsToRender[0].start : 0;
-  const paddingBottom =
-    itemsToRender.length > 0 ? virtualizer.getTotalSize() - itemsToRender[itemsToRender.length - 1].end : 0;
-
-  const renderRow = (virtualRow: (typeof virtualItems)[number]) => {
-    const rowItem = tableData[virtualRow.index];
-    const rowIndex = virtualRow.index;
-    return (
-      <tr
-        key={rowIndex}
-        className={typeof rowClassName === "function" ? rowClassName(rowItem, rowIndex) : rowClassName || ""}
-        title={typeof rowTitle === "function" ? rowTitle(rowItem, rowIndex) : rowTitle}
-      >
-        {columns.map((column, colIndex) => {
-          let cellClass = "px-2 py-1 truncate group-hover:whitespace-normal group-hover:break-words";
-          if (typeof column.cellClassName === "function") {
-            cellClass += " " + column.cellClassName(rowItem);
-          } else {
-            cellClass += " " + (column.cellClassName || "");
-          }
-
-          return (
-            <td key={colIndex} className={cellClass}>
-              {column.renderCell ? column.renderCell(rowItem, rowIndex) : null}
-            </td>
-          );
-        })}
-      </tr>
-    );
-  };
-
+  const paddingTop = virtualItems.length ? Math.max(0, virtualItems[0].start - headerHeight) : 0;
+  const paddingBottom = virtualItems.length
+    ? Math.max(0, virtualizer.getTotalSize() - (virtualItems[virtualItems.length - 1].end - headerHeight))
+    : 0;
   return (
-    <CustomScrollbars containerHeight={containerHeight} onScrollElementReady={handleScrollElementReady}>
-      <table className={`w-full border-collapse ${isFixedLayout ? "table-fixed" : "table-auto"}`}>
-        {isFixedLayout && (
-          <colgroup>
-            {columns.map((column, index) => (
-              <col key={index} style={column.width ? { width: column.width } : undefined} />
-            ))}
-          </colgroup>
-        )}
-        <thead className="bg-transparent">
-          <tr className="text-left border-b border-gray-600">
-            {columns.map((column, index) => (
-              <th key={index} className={column.headerClassName || "px-2 py-3 text-gray-300 font-medium"}>
-                {column.header || ""}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {!isReady ? (
+    <CustomScrollbars containerHeight={containerHeight} onScrollElementReady={setScrollElement}>
+      <table className={"w-full border-collapse " + (isFixedLayout ? "table-fixed" : "table-auto")}>
+        <TableHeader columns={columns} isFixedLayout={isFixedLayout} />
+        <tbody ref={bodyRef}>
+          {!scrollElement && (
             <tr>
-              <td colSpan={columns.length} style={{ height: `${containerHeight}px` }}>
+              <td colSpan={columns.length} style={{ height: containerHeight }}>
                 <div className="flex items-center justify-center h-full text-gray-400">Loading...</div>
               </td>
             </tr>
-          ) : (
-            <>
-              {paddingTop > 0 && (
-                <tr>
-                  <td style={{ height: `${paddingTop}px` }} />
-                </tr>
-              )}
-              {itemsToRender.map(renderRow)}
-              {paddingBottom > 0 && (
-                <tr>
-                  <td style={{ height: `${paddingBottom}px` }} />
-                </tr>
-              )}
-            </>
+          )}
+          {paddingTop > 0 && (
+            <tr aria-hidden="true">
+              <td colSpan={columns.length} style={{ height: paddingTop, padding: 0 }} />
+            </tr>
+          )}
+          {virtualItems.map(row => (
+            <TableRow
+              key={row.key}
+              item={tableData[row.index]}
+              index={row.index}
+              columns={columns}
+              rowClassName={rowClassName}
+              rowTitle={rowTitle}
+              measureRef={virtualizer.measureElement}
+            />
+          ))}
+          {paddingBottom > 0 && (
+            <tr aria-hidden="true">
+              <td colSpan={columns.length} style={{ height: paddingBottom, padding: 0 }} />
+            </tr>
           )}
         </tbody>
       </table>

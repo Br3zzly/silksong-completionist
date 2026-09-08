@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import type { SaveFileObj } from "@/hooks";
-import { PillButton, Modal } from "@/components/ui";
+import { Button, PillButton, Modal } from "@/components/ui";
 import { SaveEditor } from "@/components/features/SaveEditor";
 
 export function FileUpload({ saveFileObj }: { saveFileObj: SaveFileObj }) {
@@ -17,6 +17,7 @@ export function FileUpload({ saveFileObj }: { saveFileObj: SaveFileObj }) {
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) saveFileObj.handlers.handleFile(file);
+    event.target.value = "";
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -68,7 +69,6 @@ export function FileUpload({ saveFileObj }: { saveFileObj: SaveFileObj }) {
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
-      onClick={() => inputRef.current?.click()}
       className={`
           relative overflow-hidden
           bg-gradient-to-br from-gray-800/60 to-gray-800/40 
@@ -83,6 +83,13 @@ export function FileUpload({ saveFileObj }: { saveFileObj: SaveFileObj }) {
           ${!isDragging && !hasSuccess && !hasError && "border-gray-600/50"}
         `}
     >
+      <Button
+        className="absolute inset-0 z-10 w-full h-full rounded-t-lg focus-visible:outline-2 focus-visible:outline-blue-400"
+        onClick={() => inputRef.current?.click()}
+        aria-label="Browse for a save file"
+      >
+        <span className="sr-only">Browse for a save file</span>
+      </Button>
       {/* Animated gradient overlay on hover */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500" />
 
@@ -119,7 +126,9 @@ export function FileUpload({ saveFileObj }: { saveFileObj: SaveFileObj }) {
         </PillButton>
       )}
 
-      <div className="relative z-10 min-h-[60px] flex flex-col items-center justify-center">{renderContent()}</div>
+      <div className="relative z-10 pointer-events-none min-h-[60px] flex flex-col items-center justify-center">
+        {renderContent()}
+      </div>
 
       <input ref={inputRef} type="file" className="hidden" onChange={handleChange} aria-label="Upload save file" />
 

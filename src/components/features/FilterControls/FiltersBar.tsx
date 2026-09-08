@@ -1,5 +1,6 @@
 import { TextWithEmojiButton, PillButton, Separator, CustomScrollbars } from "@/components/ui";
 import { cn, toggleActInFilter } from "@/utils";
+import type { TabFilters } from "../TabContainer/types";
 import type { ActFilter } from "./index";
 
 function ShowEverythingButton({
@@ -62,11 +63,7 @@ function SpoilersButton({
 interface FiltersBarProps {
   hasUploadedSaveFile: boolean;
   hasUploadedSaveData: boolean;
-  globalFilters: {
-    showSpoilers: boolean;
-    showMissingOnly: boolean;
-    actFilter: ActFilter;
-  };
+  globalFilters: Required<TabFilters>;
   inShowEverythingMode: boolean;
   onGlobalFilterChange: (filterType: string, value: boolean | ActFilter) => void;
   onShowEverythingToggle: () => void;

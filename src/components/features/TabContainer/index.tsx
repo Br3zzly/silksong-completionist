@@ -12,20 +12,6 @@ import type { StatsItemWithDisplay } from "./types";
 
 import { NoSaveDataAvailable } from "./shared";
 
-type CacheKey = string;
-
-function getCacheKey(
-  tabId: TabId,
-  inShowEverythingMode: boolean,
-  effectiveFilters: { showMissingOnly: boolean; showSpoilers: boolean; actFilter: ActFilter }
-): CacheKey {
-  if (!tabId) return "";
-  if (tabId === "Stats") return "Stats";
-  const { showMissingOnly, actFilter } = effectiveFilters;
-  const actFilterStr = Array.from(actFilter).sort().join(",");
-  return `${tabId}-inShowEverythingMode:${inShowEverythingMode}-showMissingOnly:${showMissingOnly}-actFilter:${actFilterStr}`;
-}
-
 function computeTabData(
   category: NormalizedCategory | null,
   tabLabel: TabId,
@@ -156,12 +142,6 @@ export function TabContainer(props: TabContainerProps) {
     };
   }, [globalFilters, tabFilterMap, activeTab]);
 
-  // Persistent cache across renders (only clears when dictMapWithSaveData changes)
-  const cacheRef = useRef<Map<CacheKey, ComputedTabData>>(new Map());
-  useEffect(() => {
-    cacheRef.current.clear();
-  }, [dictMapWithSaveData]);
-
   // Scroll to TabContainer when activeTab changes (only if not in view)
   useEffect(() => {
     if (activeTab && prevActiveTabRef.current !== activeTab && containerRef.current) {
@@ -176,29 +156,11 @@ export function TabContainer(props: TabContainerProps) {
     prevActiveTabRef.current = activeTab;
   }, [activeTab]);
 
-  const cacheKey = getCacheKey(activeTab, inShowEverythingMode, effectiveFilters);
-
   const computedData = useMemo(() => {
-    if (!activeTab) return undefined;
-    if (cacheRef.current.has(cacheKey)) {
-      return cacheRef.current.get(cacheKey)!;
-    }
-
-    if (!dictMapWithSaveData) {
-      return undefined;
-    }
-
-    const category = dictMapWithSaveData.allItems[activeTab];
-    if (!category) {
-      return undefined;
-    }
-
-    const data = computeTabData(category, activeTab, effectiveFilters, inShowEverythingMode, dictMapWithSaveData);
-
-    cacheRef.current.set(cacheKey, data);
-
-    return data;
-  }, [cacheKey, dictMapWithSaveData, activeTab, effectiveFilters, inShowEverythingMode]);
+    const category = dictMapWithSaveData?.allItems[activeTab];
+    if (!category || !dictMapWithSaveData) return undefined;
+    return computeTabData(category, activeTab, effectiveFilters, inShowEverythingMode, dictMapWithSaveData);
+  }, [dictMapWithSaveData, activeTab, effectiveFilters, inShowEverythingMode]);
 
   if (!activeTab) {
     return null;

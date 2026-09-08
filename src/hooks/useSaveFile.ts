@@ -1,113 +1,61 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { DragEvent } from "react";
-
 import { decodeData, encodeData, downloadFile } from "@/utils";
+import { canExportSave, validateSaveText, type SaveValidation } from "@/utils/saveValidation";
 
-export interface SaveFileObj {
-  state: {
-    fileName: string;
-    isSaveFileDecrypted: boolean;
-    jsonText: string;
-    parsedJson: unknown;
-    isValidJson: boolean;
-    errorMessage: string;
-  };
-  handlers: {
-    setJsonText: (text: string) => void;
-    handleFile: (file: File) => void;
-    handleDrop: (event: DragEvent<HTMLDivElement>) => void;
-    handleDragOver: (event: DragEvent<HTMLDivElement>) => void;
-    saveEncrypted: () => void;
-    savePlain: () => void;
-    clearFile: () => void;
-  };
-}
-
-function isValidSilksongSaveData(parsedJson: object): boolean {
-  return "playerData" in parsedJson && "silk" in ((parsedJson.playerData ?? {}) as object);
-}
+export type SaveFileObj = ReturnType<typeof useSaveFile>;
 
 export function useSaveFile() {
   const [fileName, setFileName] = useState("");
   const [isSaveFileDecrypted, setIsSaveFileDecrypted] = useState(false);
-  const [jsonText, setJsonText] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [content, setContent] = useState<{ text: string; validation: SaveValidation }>(() => ({
+    text: "",
+    validation: validateSaveText(""),
+  }));
+  const [loadError, setLoadError] = useState("");
+  const [loadId, setLoadId] = useState(0);
+  const requestId = useRef(0);
+  const { text: jsonText, validation } = content;
+  const isValidJson = validation.kind !== "invalid";
+  const canExportEncrypted = isSaveFileDecrypted && canExportSave(validation);
+  const errorMessage = loadError || (isSaveFileDecrypted ? validation.errorMessage : "");
+  const saveData = validation.kind === "silksong" ? validation.parsedJson : null;
 
-  const parsedJson = useMemo(() => {
-    if (!jsonText) return null;
-    try {
-      return JSON.parse(jsonText);
-    } catch {
-      return null;
-    }
-  }, [jsonText]);
-
-  const isValidJson = useMemo(() => {
-    if (!jsonText) return true; // Empty text is considered valid JSON
-    try {
-      const parsedJson = JSON.parse(jsonText);
-
-      /*
-       ** This isValidSilksongSaveData check is, in part, to enable <SaveEditor /> to access
-       ** non-Silkshong, Silksong-like (think Hollow Knight), valid, decrypted .dat files (in JSON format),
-       ** while still preventing non-Silksong files from being treated as valid Silksong save data.
-       **
-       ** hasUploadedSaveFile for such files is true because of (fileName && isSaveFileDecrypted)
-       ** and <SaveEditor /> becomes usable once hasUploadedSaveFile is true.
-       **
-       ** However, in such cases, hasUploadedSaveData (hasUploadedSaveFile && !errorMessage) is aptly set to false
-       ** because of the errorMessage being set to a truthy value in handleFile: "This does not appear to be a Silksong save file."
-       ** This prevents the rest of the app from trying to read the save data, because it !hasUploadedSaveData :D
-       **
-       ** To keep the above behaviour intact, even if jsonText is valid, we only clear the
-       ** errorMessage here if parsedJson is valid Silksong save data too; only then hasUploadedSaveData
-       ** becomes true.
-       **
-       ** Otherwise, without this check, the app becomes usable with any non-Silksong/Silksong-like
-       ** save data, which is not desired.
-       **
-       ** We could have prevented all of the nonsense (and this check) by throwing an early error in
-       ** handleFile, before the truthy "success" setters (setIsSaveFileDecrypted, setJsonText calls),
-       ** but then we wouldn't have this nice thing, would we! :D
-       */
-      if (isValidSilksongSaveData(parsedJson)) setErrorMessage("");
-
-      return true;
-    } catch {
-      setErrorMessage("Invalid JSON format. Please check your syntax.");
-      return false;
-    }
-  }, [jsonText]);
+  const setJsonText = useCallback((text: string) => {
+    setContent({ text, validation: validateSaveText(text) });
+  }, []);
 
   const handleFile = useCallback((file: File) => {
+    const currentRequest = ++requestId.current;
     setFileName(file.name);
-    setErrorMessage("");
+    setIsSaveFileDecrypted(false);
+    setLoadError("");
+    setContent({ text: "", validation: validateSaveText("") });
     const reader = new FileReader();
-    reader.onload = e => {
-      if (!e.target?.result) return;
-      setIsSaveFileDecrypted(false);
-      setJsonText("");
+    const fail = () => {
+      if (requestId.current === currentRequest) setLoadError("This file is in an unsupported format.");
+    };
+    reader.onerror = fail;
+    reader.onabort = fail;
+    reader.onload = () => {
+      if (requestId.current !== currentRequest) return;
       try {
-        const data = new Uint8Array(e.target.result as ArrayBuffer);
-        const json = decodeData(data);
-        const parsedJson = JSON.parse(json);
-
-        const pretty = JSON.stringify(parsedJson, null, 2);
-        setJsonText(pretty);
+        if (!(reader.result instanceof ArrayBuffer)) return fail();
+        const text = decodeData(new Uint8Array(reader.result));
+        const result = validateSaveText(text);
+        if (result.kind === "invalid") return fail();
+        setContent({ text: JSON.stringify(result.parsedJson, null, 2), validation: result });
         setIsSaveFileDecrypted(true);
-
-        if (!isValidSilksongSaveData(parsedJson)) {
-          setErrorMessage("This does not appear to be a Silksong save file.");
-        } else {
-          setErrorMessage("");
-        }
-      } catch (error: unknown) {
-        const errorMsg = "This file is in an unsupported format.";
-        setErrorMessage(errorMsg);
-        console.error(error);
+        setLoadId(previous => previous + 1);
+      } catch {
+        fail();
       }
     };
-    reader.readAsArrayBuffer(file);
+    try {
+      reader.readAsArrayBuffer(file);
+    } catch {
+      fail();
+    }
   }, []);
 
   const handleDrop = useCallback(
@@ -124,20 +72,22 @@ export function useSaveFile() {
   }, []);
 
   const saveEncrypted = useCallback(() => {
-    const encoded = encodeData(jsonText);
-    downloadFile(encoded, fileName || "save.dat");
-  }, [jsonText, fileName]);
+    if (!canExportEncrypted) return;
+    downloadFile(encodeData(jsonText), fileName || "save.dat");
+  }, [canExportEncrypted, jsonText, fileName]);
 
+  // Plain downloads also serve as a way to recover unfinished editor drafts.
   const savePlain = useCallback(() => {
     const nameWithoutExtension = fileName.replace(/\.[^/.]+$/, "");
-    downloadFile(jsonText, `${nameWithoutExtension || "save"}.json`);
+    downloadFile(jsonText, (nameWithoutExtension || "save") + ".json");
   }, [jsonText, fileName]);
 
   const clearFile = useCallback(() => {
+    ++requestId.current;
     setFileName("");
     setIsSaveFileDecrypted(false);
-    setJsonText("");
-    setErrorMessage("");
+    setContent({ text: "", validation: validateSaveText("") });
+    setLoadError("");
   }, []);
 
   return useMemo(
@@ -146,27 +96,26 @@ export function useSaveFile() {
         fileName,
         isSaveFileDecrypted,
         jsonText,
-        parsedJson,
+        parsedJson: validation.parsedJson,
+        saveData,
         isValidJson,
+        canExportEncrypted,
         errorMessage,
+        loadId,
       },
-      handlers: {
-        setJsonText,
-        handleFile,
-        handleDrop,
-        handleDragOver,
-        saveEncrypted,
-        savePlain,
-        clearFile,
-      },
+      handlers: { setJsonText, handleFile, handleDrop, handleDragOver, saveEncrypted, savePlain, clearFile },
     }),
     [
       fileName,
       isSaveFileDecrypted,
       jsonText,
-      parsedJson,
+      validation.parsedJson,
+      saveData,
       isValidJson,
+      canExportEncrypted,
       errorMessage,
+      loadId,
+      setJsonText,
       handleFile,
       handleDrop,
       handleDragOver,

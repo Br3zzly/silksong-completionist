@@ -1,22 +1,9 @@
-const assetModules = import.meta.glob("/src/assets/**/*.{png,jpg,jpeg,gif,webp}", {
-  eager: false,
-  query: "?url",
+const assetUrls = import.meta.glob<string>("/src/assets/{journal,quills}/*.{png,jpg,jpeg,gif,webp}", {
+  eager: true,
+  query: "?url&no-inline",
   import: "default",
 });
 
-const cache = new Map<string, string>();
-
-export async function getAssetUrl(path: string): Promise<string> {
-  const fullPath = `/src/assets/${path}`;
-
-  if (cache.has(fullPath)) {
-    return cache.get(fullPath)!;
-  }
-
-  const importFn = assetModules[fullPath];
-  if (!importFn) return "";
-
-  const url = (await importFn()) as string;
-  cache.set(fullPath, url);
-  return url;
+export function getAssetUrl(path: string): string {
+  return assetUrls["/src/assets/" + path] ?? "";
 }

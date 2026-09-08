@@ -1,4 +1,9 @@
-import CryptoJS from "crypto-js";
+import AES from "crypto-js/aes";
+import Base64 from "crypto-js/enc-base64";
+import Utf8 from "crypto-js/enc-utf8";
+import ECB from "crypto-js/mode-ecb";
+import Pkcs7 from "crypto-js/pad-pkcs7";
+import { lib } from "crypto-js/core";
 
 const CSHARP_HEADER = new Uint8Array([0, 1, 0, 0, 0, 255, 255, 255, 255, 1, 0, 0, 0, 0, 0, 0, 0, 6, 1, 0, 0, 0]);
 const AES_KEY_STRING = "UKu52ePUBwetZ9wNX88o54dnfKRu0T1l";
@@ -44,29 +49,29 @@ export function decodeData(fileBytes: Uint8Array): string {
     base64String += String.fromCharCode(...bytesWithoutHeader.slice(i, i + CHUNK_SIZE));
   }
 
-  const encryptedWords = CryptoJS.enc.Base64.parse(base64String);
-  const cipherParams = CryptoJS.lib.CipherParams.create({
+  const encryptedWords = Base64.parse(base64String);
+  const cipherParams = lib.CipherParams.create({
     ciphertext: encryptedWords,
   });
 
-  const key = CryptoJS.enc.Utf8.parse(AES_KEY_STRING);
-  const decrypted = CryptoJS.AES.decrypt(cipherParams, key, {
-    mode: CryptoJS.mode.ECB,
-    padding: CryptoJS.pad.Pkcs7,
+  const key = Utf8.parse(AES_KEY_STRING);
+  const decrypted = AES.decrypt(cipherParams, key, {
+    mode: ECB,
+    padding: Pkcs7,
   });
 
-  return CryptoJS.enc.Utf8.stringify(decrypted);
+  return Utf8.stringify(decrypted);
 }
 
 export function encodeData(jsonString: string): Uint8Array {
-  const key = CryptoJS.enc.Utf8.parse(AES_KEY_STRING);
-  const jsonWords = CryptoJS.enc.Utf8.parse(jsonString);
+  const key = Utf8.parse(AES_KEY_STRING);
+  const jsonWords = Utf8.parse(jsonString);
 
-  const encrypted = CryptoJS.AES.encrypt(jsonWords, key, {
-    mode: CryptoJS.mode.ECB,
-    padding: CryptoJS.pad.Pkcs7,
+  const encrypted = AES.encrypt(jsonWords, key, {
+    mode: ECB,
+    padding: Pkcs7,
   });
-  const base64String = encrypted.ciphertext.toString(CryptoJS.enc.Base64);
+  const base64String = encrypted.ciphertext.toString(Base64);
 
   const base64Bytes = new Uint8Array(base64String.length);
   for (let i = 0; i < base64String.length; i++) {

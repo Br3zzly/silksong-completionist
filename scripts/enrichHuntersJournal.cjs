@@ -5,17 +5,17 @@ const https = require("https");
 const metadata = require("./extractedMetadata.cjs");
 const { enemyMetadata, completionVariantsMetadata } = metadata;
 
-const journalModule = require("../dictionary/categories/huntersJournal.ts");
+const journalModule = require("../src/dictionary/categories/huntersJournal.ts");
 const huntersJournal = journalModule.huntersJournal;
 
-const bossesModule = require("../dictionary/categories/bosses.ts");
+const bossesModule = require("../src/dictionary/categories/bosses.ts");
 const bosses = bossesModule.bosses;
 
 const OUTPUT_FILENAME = "huntersJournalEnriched.ts";
-const OUTPUT_PATH = path.join(__dirname, "../dictionary/categories", OUTPUT_FILENAME);
+const OUTPUT_PATH = path.join(__dirname, "../src/dictionary/categories", OUTPUT_FILENAME);
 const BOSSES_OUTPUT_FILENAME = "bossesEnriched.ts";
-const BOSSES_OUTPUT_PATH = path.join(__dirname, "../dictionary/categories", BOSSES_OUTPUT_FILENAME);
-const JOURNAL_ASSETS_DIR = path.join(__dirname, "../assets/journal");
+const BOSSES_OUTPUT_PATH = path.join(__dirname, "../src/dictionary/categories", BOSSES_OUTPUT_FILENAME);
+const JOURNAL_ASSETS_DIR = path.join(__dirname, "../src/assets/journal");
 
 function downloadFile(url, filepath) {
   return new Promise((resolve, reject) => {

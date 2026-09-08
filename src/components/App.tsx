@@ -7,6 +7,7 @@ import { NORMALISED_DICT_MAP, type DictMapWithSaveData } from "@/dictionary";
 import { computeDictMapWithSaveData } from "@/utils";
 
 import type { TabId } from "./features/TabBar/tabs";
+import type { TabFilters } from "./features/TabContainer/types";
 import type { ActFilter } from "./features/FilterControls";
 
 import { AppContainer } from "./features/AppContainer";
@@ -33,21 +34,21 @@ export default function App() {
     showMissingOnly: true,
     actFilter: new Set([1, 2, 3] as const),
   });
-  const [tabFilterMap, setTabFilterMap] = useState(new Map());
+  const [tabFilterMap, setTabFilterMap] = useState<Map<TabId, TabFilters>>(new Map());
 
   const saveFileObj = useSaveFile();
 
   const hasUploadedSaveFile = Boolean(saveFileObj.state.fileName && saveFileObj.state.isSaveFileDecrypted);
-  const hasUploadedSaveData = Boolean(hasUploadedSaveFile && !saveFileObj.state.errorMessage);
+  const hasUploadedSaveData = Boolean(hasUploadedSaveFile && saveFileObj.state.saveData);
 
   const dictMapWithSaveData = useMemo((): DictMapWithSaveData | null => {
     if (!hasUploadedSaveData && !inShowEverythingMode) {
       return null;
     }
 
-    const parsedJson = !inShowEverythingMode && (saveFileObj.state.parsedJson ?? {});
+    const parsedJson = saveFileObj.state.saveData;
     return computeDictMapWithSaveData(NORMALISED_DICT_MAP, parsedJson, inShowEverythingMode);
-  }, [saveFileObj.state.parsedJson, hasUploadedSaveData, inShowEverythingMode]);
+  }, [saveFileObj.state.saveData, hasUploadedSaveData, inShowEverythingMode]);
 
   useEffect(() => {
     // Reset filters when a (new) save file is loaded
@@ -59,7 +60,7 @@ export default function App() {
     });
     setTabFilterMap(new Map());
     setActiveTab("Stats");
-  }, [saveFileObj]);
+  }, [saveFileObj.state.loadId]);
 
   const handleCopyPath = (path: string) => {
     navigator.clipboard.writeText(path);
@@ -92,9 +93,10 @@ export default function App() {
   };
 
   const handleTabFilterChange = (filterType: string, value: boolean | ActFilter) => {
-    const currentTabFilters = tabFilterMap.get(activeTab) ?? globalFilters;
-    const newTabFilters = { ...currentTabFilters, [filterType]: value };
-    setTabFilterMap(prev => new Map(prev.set(activeTab, newTabFilters)));
+    setTabFilterMap(prev => {
+      const currentTabFilters = prev.get(activeTab) ?? globalFilters;
+      return new Map(prev).set(activeTab, { ...currentTabFilters, [filterType]: value });
+    });
   };
 
   return (

@@ -13,7 +13,7 @@ const VARIANT_CONFIG = {
   NO_SAVE_FILE: {
     defaultMessage: "No save file loaded.",
     hoverMessage: "🎵✨ Using the power of song...",
-    "🐣": [
+    playlist: [
       "https://www.youtube.com/shorts/5tVYDZKOUgs", // I just need some ... SHAW!
       "https://soundcloud.com/kirkhamilton/shakras-song-remix-hollow-knight-silksong", // Shakra's Song - Kirk Hamilton Remix
       "https://www.youtube.com/watch?v=CtqbHimldIc", // Sherma x Shakra Remix
@@ -23,7 +23,7 @@ const VARIANT_CONFIG = {
   CORRUPTED_SAVE_DATA: {
     defaultMessage: "Corrupted / Invalid save data.",
     hoverMessage: "🎵✨ Manifesting a fix...",
-    "🐣": [
+    playlist: [
       "https://www.youtube.com/watch?v=z8_7mpKMw0M", // Myla x Sherma Remix
       "https://www.youtube.com/watch?v=RCxoDmHUpMc", // Cornifer Humming Remix
     ],
@@ -32,14 +32,14 @@ const VARIANT_CONFIG = {
 
 export function NoSaveDataAvailable({ variant = "NO_SAVE_FILE" }: NoValidSaveProps) {
   const config = VARIANT_CONFIG[variant];
-  const state = useRef({ "📻": [] as string[], "🎶": 0 });
+  const state = useRef({ shuffledTracks: [] as string[], trackIndex: 0 });
   const shermaRef = useRef<HTMLImageElement>(null);
   const shermaGifRef = useRef<HTMLImageElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    state.current["📻"] = shuffleArray(config["🐣"]);
-    state.current["🎶"] = 0;
+    state.current.shuffledTracks = shuffleArray(config.playlist);
+    state.current.trackIndex = 0;
   }, [config, variant]);
 
   const handleMouseEnter = () => {
@@ -59,12 +59,12 @@ export function NoSaveDataAvailable({ variant = "NO_SAVE_FILE" }: NoValidSavePro
   };
 
   const handleClick = () => {
-    if (state.current["🎶"] >= state.current["📻"].length) {
-      state.current["📻"] = shuffleArray(config["🐣"]);
-      state.current["🎶"] = 0;
+    if (state.current.trackIndex >= state.current.shuffledTracks.length) {
+      state.current.shuffledTracks = shuffleArray(config.playlist);
+      state.current.trackIndex = 0;
     }
-    window.open(state.current["📻"][state.current["🎶"]], "_blank", "noopener,noreferrer");
-    state.current["🎶"]++;
+    window.open(state.current.shuffledTracks[state.current.trackIndex], "_blank", "noopener,noreferrer");
+    state.current.trackIndex++;
   };
 
   return (

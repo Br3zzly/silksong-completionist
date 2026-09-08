@@ -13,19 +13,21 @@
     "format:check": "prettier --check .",
     "preview": "vite preview",
     "deploy": "npm run build && copy dist\\index.html dist\\404.html && gh-pages -d dist",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
-    "@tailwindcss/vite": "^4.1.13",
     "@tanstack/react-virtual": "^3.13.12",
     "crypto-js": "^4.2.0",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "tailwindcss": "^4.1.13"
+    "react-dom": "^19.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@playwright/test": "^1.63.0",
+    "@testing-library/react": "^16.3.3",
     "@types/crypto-js": "^4.2.2",
     "@types/node": "^24.9.1",
     "@types/react": "^19.1.10",
@@ -37,9 +39,13 @@
     "gh-pages": "^6.3.0",
     "globals": "^16.3.0",
     "husky": "^9.1.7",
+    "jsdom": "^30.0.1",
     "prettier": "^3.6.2",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",
-    "vite": "^7.1.2"
+    "vite": "^7.1.2",
+    "vitest": "^5.0.0",
+    "tailwindcss": "^4.1.13",
+    "@tailwindcss/vite": "^4.1.13"
   }
 }

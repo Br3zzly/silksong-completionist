@@ -1,185 +1,120 @@
 import type { ParsingInfo, ParsingInfoAnyOf } from "./types";
+import {
+  COLLECTION_NAMES,
+  type SilksongSave,
+  type SavedEntry,
+  type CollectionName,
+  type SceneEntry,
+} from "@/utils/saveValidation";
 
-function isParsingInfoAnyOf(parsingInfo: ParsingInfo | ParsingInfoAnyOf): parsingInfo is ParsingInfoAnyOf {
-  return Array.isArray(parsingInfo);
+export interface ParseResult {
+  unlocked: boolean;
+  returnValue?: unknown;
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export function isItemUnlockedInPlayerSave(
-  itemParsingInfo: ParsingInfo | ParsingInfoAnyOf,
-  saveData: any
-): { unlocked: boolean; returnValue?: number } {
-  if (isParsingInfoAnyOf(itemParsingInfo)) {
-    let unlocked = false;
-    let returnValue: number | undefined;
+// Preserve Array.find's first-match behavior if a save contains repeated records.
+function indexFirst<T>(entries: T[], key: (entry: T) => string): Map<string, T> {
+  const result = new Map<string, T>();
+  for (const entry of entries) if (!result.has(key(entry))) result.set(key(entry), entry);
+  return result;
+}
+const sceneKey = (scene: string, id: string) => JSON.stringify([scene, id]);
 
-    for (const parsingInfo of itemParsingInfo) {
-      const result = isItemUnlockedInPlayerSave(parsingInfo, saveData);
-      if (result.unlocked) {
-        unlocked = true;
-        returnValue = result.returnValue;
-        break;
-      }
-    }
-
-    return { unlocked, returnValue };
+export function createSaveParser(saveData: SilksongSave) {
+  const player = saveData.playerData;
+  const collections = new Map<CollectionName, Map<string, SavedEntry>>();
+  for (const name of COLLECTION_NAMES) {
+    collections.set(
+      name,
+      indexFirst(player[name]?.savedData ?? [], entry => entry.Name)
+    );
   }
+  const journal = indexFirst(player.EnemyJournalKillData?.list ?? [], entry => entry.Name);
+  const visited = new Set(player.scenesVisited ?? []);
+  // Deposits historically use some(), so any deposited duplicate counts.
+  const deposits = new Set(
+    (player.MementosDeposited?.savedData ?? []).filter(entry => entry.Data?.IsDeposited).map(entry => entry.Name)
+  );
+  const scenes = new Map<string, Map<string, SceneEntry>>();
+  for (const name of ["persistentBools", "persistentInts", "geoRocks"] as const) {
+    scenes.set(
+      name,
+      indexFirst(saveData.sceneData?.[name]?.serializedList ?? [], entry => sceneKey(entry.SceneName, entry.ID))
+    );
+  }
+  const data = (collection: CollectionName, name: string) => collections.get(collection)?.get(name)?.Data;
+  const sceneValue = (collection: string, pair: [string, string] | [string, string, number]) =>
+    scenes.get(collection)?.get(sceneKey(pair[0], pair[1]))?.Value;
 
-  const playerData = (saveData as any).playerData ?? {};
-
-  const parsers = {
-    flag: (flagName: string) => {
-      const unlocked = !!playerData[flagName];
-      return { unlocked };
-    },
-
-    flagAnyOf: (flagNames: string[]) => {
-      let unlocked = false;
-      for (const flagName of flagNames) {
-        if ((playerData as any)[flagName]) {
-          unlocked = true;
-          break;
-        }
+  function parse(info: ParsingInfo | ParsingInfoAnyOf): ParseResult {
+    if (Array.isArray(info)) {
+      for (const alternative of info) {
+        const result = parse(alternative);
+        if (result.unlocked) return result;
       }
-      return { unlocked };
-    },
-
-    flagMin: ([flagName, requiredValue]: [string, number]) => {
-      const actualValue = (playerData[flagName] as number) ?? 0;
-      return { unlocked: actualValue >= requiredValue };
-    },
-
-    flagReturn: (flagName: string) => {
-      const returnValue = playerData[flagName];
-      const unlocked = !!returnValue;
-      return { unlocked, returnValue };
-    },
-
-    tool: (toolNames: string[]) => {
-      const tools = (playerData as any)?.Tools?.savedData || [];
-      let unlocked = false;
-      for (const name of toolNames) {
-        const foundTool = tools.find((t: any) => t?.Name === name);
-        if (foundTool && !!foundTool?.Data?.IsUnlocked) {
-          unlocked = true;
-          break;
-        }
+      return { unlocked: false };
+    }
+    switch (info.type) {
+      case "flag":
+        return { unlocked: !!player[info.internalId] };
+      case "flagAnyOf":
+        return { unlocked: info.internalId.some(name => !!player[name]) };
+      case "flagMin": {
+        const value = player[info.internalId[0]] ?? 0;
+        return { unlocked: typeof value === "number" && value >= info.internalId[1] };
       }
-      return { unlocked };
-    },
-
-    journal: (entryName: string) => {
-      const journal = (playerData as any)?.EnemyJournalKillData?.list || [];
-      let unlocked = false;
-      let killsAchieved = 0;
-
-      const foundEntry = journal.find((t: any) => t?.Name === entryName);
-      if (foundEntry) {
-        killsAchieved = foundEntry.Record.Kills;
-        if (foundEntry.Record.Kills >= 0) {
-          unlocked = true;
-        }
+      case "flagReturn":
+        return { unlocked: !!player[info.internalId], returnValue: player[info.internalId] };
+      case "tool":
+        return { unlocked: info.internalId.some(name => !!data("Tools", name)?.IsUnlocked) };
+      case "journal": {
+        const entry = journal.get(info.internalId);
+        return { unlocked: !!entry && entry.Record.Kills >= 0, returnValue: entry?.Record.Kills ?? 0 };
       }
-      return { unlocked, returnValue: killsAchieved };
-    },
-
-    crest: (crestName: string) => {
-      const crest = (playerData as any)?.ToolEquips?.savedData || [];
-      const foundCrest = crest.find((t: any) => t?.Name === crestName);
-      return { unlocked: !!foundCrest?.Data?.IsUnlocked };
-    },
-
-    collectable: (itemName: string) => {
-      const collectableEntry = (playerData as any).Collectables?.savedData?.find((x: any) => x.Name === itemName);
-      const foundAmount = collectableEntry?.Data?.Amount ?? 0;
-      return { unlocked: foundAmount > 0 };
-    },
-
-    relic: (relicName: string) => {
-      const relics = (playerData as any)?.Relics?.savedData || [];
-      const foundRelic = relics.find((r: any) => r?.Name === relicName);
-      return { unlocked: !!foundRelic?.Data?.IsCollected };
-    },
-
-    materium: (materiumName: string) => {
-      if (!playerData["ConstructedMaterium"]) {
-        return { unlocked: false };
+      case "crest":
+        return { unlocked: !!data("ToolEquips", info.internalId)?.IsUnlocked };
+      case "collectable": {
+        const amount = data("Collectables", info.internalId)?.Amount;
+        return { unlocked: typeof amount === "number" && amount > 0 };
       }
+      case "relic":
+        return { unlocked: !!data("Relics", info.internalId)?.IsCollected };
+      case "materium": {
+        const entry = data("MateriumCollected", info.internalId);
+        return { unlocked: !!player.ConstructedMaterium && !!(entry?.IsCollected || entry?.HasSeenInRelicBoard) };
+      }
+      case "quill":
+        return { unlocked: !!player[info.internalId], returnValue: player[info.internalId] ? player.QuillState : 0 };
+      case "quest":
+        return { unlocked: !!data("QuestCompletionData", info.internalId)?.IsCompleted };
+      case "sceneDataBool":
+        return { unlocked: !!sceneValue("persistentBools", info.internalId) };
+      case "sceneDataInt":
+        return { unlocked: sceneValue("persistentInts", info.internalId) === info.internalId[2] };
+      case "sceneDataIntRosaries":
+        return { unlocked: sceneValue("persistentInts", info.internalId) === -1 };
+      // Preserve the existing WIP cache semantics until verified against game saves.
+      case "sceneDataIntShards":
+        return { unlocked: !sceneValue("persistentInts", info.internalId) };
+      case "sceneDataGeo":
+        return { unlocked: !sceneValue("geoRocks", info.internalId) };
+      case "sceneVisited":
+        return { unlocked: visited.has(info.internalId) };
+      case "mementoDeposit":
+        return { unlocked: deposits.has(info.internalId) };
+    }
+  }
+  return parse;
+}
 
-      const materium = (playerData as any)?.MateriumCollected?.savedData || [];
-      const foundMaterium = materium.find((m: any) => m?.Name === materiumName);
-      return { unlocked: !!foundMaterium?.Data?.IsCollected || !!foundMaterium?.Data?.HasSeenInRelicBoard };
-    },
-
-    quill: (quillFlag: string) => {
-      const unlocked = !!playerData[quillFlag];
-      return { unlocked, returnValue: unlocked ? playerData["QuillState"] : 0 };
-    },
-
-    quest: (questName: string) => {
-      const questEntry = (playerData as any).QuestCompletionData?.savedData?.find((x: any) => x.Name === questName);
-      return { unlocked: questEntry?.Data?.IsCompleted ?? false };
-    },
-
-    sceneDataBool: ([sceneName, id]: [string, string]) => {
-      const sceneData = (saveData as any).sceneData || {};
-      const allEntries = sceneData.persistentBools?.serializedList || [];
-      const foundEntry = allEntries.find((x: any) => x.SceneName === sceneName && x.ID === id);
-      return { unlocked: Boolean(foundEntry?.Value) };
-    },
-
-    sceneDataInt: ([sceneName, id, requiredValue]: [string, string, number]) => {
-      const sceneData = (saveData as any).sceneData || {};
-      const allEntries = sceneData.persistentInts?.serializedList || [];
-      const foundEntry = allEntries.find((x: any) => x.SceneName === sceneName && x.ID === id);
-      return { unlocked: foundEntry?.Value === requiredValue };
-    },
-
-    sceneDataIntRosaries: ([sceneName, id]: [string, string]) => {
-      const sceneData = (saveData as any).sceneData || {};
-      const allEntries = sceneData.persistentInts?.serializedList || [];
-      const foundEntry = allEntries.find((x: any) => x.SceneName === sceneName && x.ID === id);
-      return { unlocked: foundEntry?.Value === -1 }; // TODO: Verify if -1 is the correct value for acquired rosary caches
-    },
-
-    sceneDataIntShards: ([sceneName, id]: [string, string]) => {
-      const sceneData = (saveData as any).sceneData || {};
-      const allEntries = sceneData.persistentInts?.serializedList || [];
-      const foundEntry = allEntries.find((x: any) => x.SceneName === sceneName && x.ID === id);
-      return { unlocked: !foundEntry?.Value }; // This seems accurate as preliminary testing suggests that the "Value" is 0 when acquired
-    },
-
-    sceneDataGeo: ([sceneName, id]: [string, string]) => {
-      const sceneData = (saveData as any).sceneData || {};
-      const allEntries = sceneData.geoRocks?.serializedList || [];
-      const foundEntry = allEntries.find((x: any) => x.SceneName === sceneName && x.ID === id);
-      return { unlocked: !foundEntry?.Value }; // This seems accurate as preliminary testing suggests that the "Value" is 0 when acquired
-    },
-
-    sceneVisited: (sceneName: string) => {
-      return { unlocked: !!(playerData as any)?.scenesVisited?.includes(sceneName) };
-    },
-
-    mementoDeposit: (mementoName: string) => {
-      const mementos = (playerData as any)?.MementosDeposited?.savedData ?? [];
-      const unlocked = mementos.some((entry: any) => entry.Name === mementoName && entry.Data?.IsDeposited);
-      return { unlocked };
-    },
-  };
-  // @ts-expect-error - Dynamic function call based on parsing type
-  return parsers[itemParsingInfo.type](itemParsingInfo.internalId);
+export function isItemUnlockedInPlayerSave(info: ParsingInfo | ParsingInfoAnyOf, save: SilksongSave): ParseResult {
+  return createSaveParser(save)(info);
 }
 
 export function isItemInCurrentGameMode(
   item: { onlyFoundInClassicMode?: boolean; onlyFoundInSteelSoulMode?: boolean },
-  saveData: any
+  save: SilksongSave
 ): boolean {
-  const playerData = (saveData as any).playerData ?? {};
-  const isCurrentModeClassic = playerData.permadeathMode === 0;
-
-  const itemIsNotInCurrentGameMode =
-    (item.onlyFoundInSteelSoulMode && isCurrentModeClassic) || (item.onlyFoundInClassicMode && !isCurrentModeClassic);
-
-  return !itemIsNotInCurrentGameMode;
+  const isClassic = save.playerData.permadeathMode === 0;
+  return !((item.onlyFoundInSteelSoulMode && isClassic) || (item.onlyFoundInClassicMode && !isClassic));
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */

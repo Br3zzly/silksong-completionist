@@ -37,6 +37,7 @@ export function HuntersJournalContent({
     <Table<NormalizedItem>
       isFixedLayout={true}
       tableData={items}
+      getRowKey={item => JSON.stringify([item.name, item.whichAct, item.parsingInfo])}
       enableVirtualization={items.length > 100}
       rowClassName="border-b border-gray-700 last:border-none group bg-gray-800/30 hover:bg-gray-700/40 transition-colors"
       rowTitle={(item: NormalizedItem) => {

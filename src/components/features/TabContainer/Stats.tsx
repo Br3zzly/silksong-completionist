@@ -15,9 +15,9 @@ export function StatsContent({ tabLabel, computedData }: TabContentProps): React
 
       <div className="bg-gray-900/50 border-2 border-gray-600/30 rounded-b-lg border-t-0 p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {statsItems.map((item, index) => (
+          {statsItems.map(item => (
             <div
-              key={index}
+              key={item.name}
               className="bg-gradient-to-br from-gray-800/60 to-gray-800/40 border border-gray-600/50 rounded-xl p-6 hover:from-gray-700/60 hover:to-gray-700/40 hover:border-blue-500/30 transition-all duration-200 shadow-lg"
               title={item.detailedValue || undefined}
             >

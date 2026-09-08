@@ -73,8 +73,36 @@ export type CategorySection = {
   items: CategoryItem[];
 };
 
+export type CategoryId =
+  | "Abilities"
+  | "Bellhome"
+  | "Bellways"
+  | "Bosses"
+  | "Caches & Secrets"
+  | "Craftmetals"
+  | "Crests"
+  | "Lost Fleas"
+  | "Hunter's Journal"
+  | "Keys"
+  | "Mapping Supplies"
+  | "Mask Shards"
+  | "Materium"
+  | "Mementos"
+  | "Memory Lockets"
+  | "Mossberries"
+  | "Pale Oil"
+  | "Relics"
+  | "Silkeaters"
+  | "Spool Fragments"
+  | "Stats"
+  | "Tasks"
+  | "Tools"
+  | "Unique Spawns"
+  | "Upgrades"
+  | "Ventrica Stations";
+
 export type TrackableCategory = {
-  name: string;
+  name: CategoryId;
   description?: string;
   descriptionMarkup?: ReactNode | ((showSpoilers?: boolean, sectionData?: unknown) => ReactNode);
   sections: CategorySection[];

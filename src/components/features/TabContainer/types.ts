@@ -32,17 +32,13 @@ export interface TabContainerProps {
   hasUploadedSaveFile: boolean;
   hasUploadedSaveData: boolean;
   inShowEverythingMode: boolean;
-  globalFilters: {
-    showSpoilers: boolean;
-    showMissingOnly: boolean;
-    actFilter: ActFilter;
-  };
+  globalFilters: Required<TabFilters>;
   tabFilterMap: Map<TabId, TabFilters>;
   onTabFilterChange: (filterType: string, value: boolean | ActFilter) => void;
 }
 
 export interface TabContentProps {
-  tabLabel: TabId;
+  tabLabel: string;
   showSpoilers: boolean;
   showMissingOnly: boolean;
   inShowEverythingMode: boolean;

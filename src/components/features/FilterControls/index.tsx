@@ -2,16 +2,14 @@ import { useState, useEffect } from "react";
 import { FiltersBar } from "./FiltersBar";
 import { FiltersBarToggler } from "./FiltersBarToggler";
 
+import type { TabFilters } from "../TabContainer/types";
+
 export type ActFilter = Set<1 | 2 | 3>;
 
 interface FilterControlsProps {
   hasUploadedSaveFile: boolean;
   hasUploadedSaveData: boolean;
-  globalFilters: {
-    showSpoilers: boolean;
-    showMissingOnly: boolean;
-    actFilter: ActFilter;
-  };
+  globalFilters: Required<TabFilters>;
   inShowEverythingMode: boolean;
   onGlobalFilterChange: (filterType: string, value: boolean | ActFilter) => void;
   onShowEverythingToggle: () => void;

@@ -11,6 +11,9 @@ export interface TableCell<T = unknown> {
 export interface TableProps<T = unknown> {
   columns: TableCell<T>[];
   tableData?: T[];
+  getRowKey: (item: T) => string;
+  containerHeight?: number;
+  estimatedRowHeight?: number;
   rowClassName?: string | ((item: T, rowIndex: number) => string);
   rowTitle?: string | ((item: T, rowIndex: number) => string | undefined);
   children?: ReactNode;
