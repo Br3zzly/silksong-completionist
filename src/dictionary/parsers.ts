@@ -15,7 +15,10 @@ export interface ParseResult {
 // Preserve Array.find's first-match behavior if a save contains repeated records.
 function indexFirst<T>(entries: T[], key: (entry: T) => string): Map<string, T> {
   const result = new Map<string, T>();
-  for (const entry of entries) if (!result.has(key(entry))) result.set(key(entry), entry);
+  for (const entry of entries) {
+    const id = key(entry);
+    if (!result.has(id)) result.set(id, entry);
+  }
   return result;
 }
 const sceneKey = (scene: string, id: string) => JSON.stringify([scene, id]);
@@ -24,6 +27,7 @@ export function createSaveParser(saveData: SilksongSave) {
   const player = saveData.playerData;
   const collections = new Map<CollectionName, Map<string, SavedEntry>>();
   for (const name of COLLECTION_NAMES) {
+    if (name === "MementosDeposited") continue; // Indexed separately using any-match semantics.
     collections.set(
       name,
       indexFirst(player[name]?.savedData ?? [], entry => entry.Name)

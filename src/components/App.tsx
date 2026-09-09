@@ -1,148 +1,100 @@
-﻿import { useState, useEffect, useMemo } from "react";
-
-import { useSaveFile } from "@/hooks";
-
-import { NORMALISED_DICT_MAP, type DictMapWithSaveData } from "@/dictionary";
-
-import { computeDictMapWithSaveData } from "@/utils";
-
-import type { TabId } from "./features/TabBar/tabs";
-import type { TabFilters } from "./features/TabContainer/types";
-import type { ActFilter } from "./features/FilterControls";
-
-import { AppContainer } from "./features/AppContainer";
-
-import { Header } from "./features/Header";
-import { SaveFileInfo } from "./features/SaveFileInfo";
-import { FileUpload } from "./features/FileUpload";
-import { FilterControls } from "./features/FilterControls";
-
-import { Separator } from "./ui/Separator";
-
-import { TotalProgress } from "./features/TotalProgress";
-import { TabBar } from "./features/TabBar";
-import { TabContainer } from "./features/TabContainer";
-
-import { Footer } from "./features/Footer";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useSaveFile } from "@/hooks/useSaveFile";
+import { NORMALISED_DICT_MAP } from "@/dictionary";
+import { computeDictMapWithSaveData } from "@/utils/data";
+import { formatPercent } from "@/utils/general";
+import { defaultFilters, type FilterChange } from "@/utils/collection";
+import type { TabId } from "./categories";
+import { footerConfig } from "./links";
+import { SaveControls } from "./SaveControls";
+import { Filters } from "./Filters";
+import { CategoryNavigation } from "./CategoryNavigation";
+import { CategoryContent } from "./CategoryContent";
 
 export default function App() {
+  const save = useSaveFile();
   const [activeTab, setActiveTab] = useState<TabId>("Stats");
-  const [inShowEverythingMode, setInShowEverythingMode] = useState(false);
-
-  const [globalFilters, setGlobalFilters] = useState({
-    showSpoilers: false,
-    showMissingOnly: true,
-    actFilter: new Set([1, 2, 3] as const),
-  });
-  const [tabFilterMap, setTabFilterMap] = useState<Map<TabId, TabFilters>>(new Map());
-
-  const saveFileObj = useSaveFile();
-
-  const hasUploadedSaveFile = Boolean(saveFileObj.state.fileName && saveFileObj.state.isSaveFileDecrypted);
-  const hasUploadedSaveData = Boolean(hasUploadedSaveFile && saveFileObj.state.saveData);
-
-  const dictMapWithSaveData = useMemo((): DictMapWithSaveData | null => {
-    if (!hasUploadedSaveData && !inShowEverythingMode) {
-      return null;
-    }
-
-    const parsedJson = saveFileObj.state.saveData;
-    return computeDictMapWithSaveData(NORMALISED_DICT_MAP, parsedJson, inShowEverythingMode);
-  }, [saveFileObj.state.saveData, hasUploadedSaveData, inShowEverythingMode]);
-
+  const [browse, setBrowse] = useState(false);
+  const [globalFilters, setGlobalFilters] = useState(defaultFilters);
+  const contentRef = useRef<HTMLElement>(null);
+  const previousTab = useRef(activeTab);
+  const hasSave = save.state.isSaveFileDecrypted && !!save.state.saveData;
+  const data = useMemo(
+    () => (hasSave || browse ? computeDictMapWithSaveData(NORMALISED_DICT_MAP, save.state.saveData, browse) : null),
+    [hasSave, browse, save.state.saveData]
+  );
   useEffect(() => {
-    // Reset filters when a (new) save file is loaded
-    setInShowEverythingMode(false);
-    setGlobalFilters({
-      showSpoilers: false,
-      showMissingOnly: true,
-      actFilter: new Set([1, 2, 3] as const),
-    });
-    setTabFilterMap(new Map());
+    setBrowse(false);
+    setGlobalFilters(defaultFilters());
     setActiveTab("Stats");
-  }, [saveFileObj.state.loadId]);
-
-  const handleCopyPath = (path: string) => {
-    navigator.clipboard.writeText(path);
-  };
-
-  const handleTabSelect = (tab: TabId) => {
-    // If the active tab is clicked, deactivate it and return to Stats
-    if (tab === activeTab) {
-      setActiveTab("Stats");
-    } else {
-      setActiveTab(tab);
-    }
-  };
-
-  const handleShowEverythingToggle = () => {
-    setInShowEverythingMode(!inShowEverythingMode);
-  };
-
-  const handleGlobalFilterChange = (filterType: string, value: boolean | ActFilter) => {
-    setGlobalFilters(prev => ({ ...prev, [filterType]: value }));
-
-    // Update the specific filterType across all existing tab configurations
-    setTabFilterMap(prev => {
-      const newMap = new Map(prev);
-      for (const [tabId, tabFilters] of newMap) {
-        newMap.set(tabId, { ...tabFilters, [filterType]: value });
-      }
-      return newMap;
-    });
-  };
-
-  const handleTabFilterChange = (filterType: string, value: boolean | ActFilter) => {
-    setTabFilterMap(prev => {
-      const currentTabFilters = prev.get(activeTab) ?? globalFilters;
-      return new Map(prev).set(activeTab, { ...currentTabFilters, [filterType]: value });
-    });
-  };
-
+  }, [save.state.loadId]);
+  useEffect(() => {
+    if (previousTab.current === activeTab) return;
+    previousTab.current = activeTab;
+    const element = contentRef.current;
+    if (
+      element &&
+      (element.getBoundingClientRect().top >= window.innerHeight || element.getBoundingClientRect().bottom <= 0)
+    )
+      element.scrollIntoView({ block: "start" });
+  }, [activeTab]);
+  const changeGlobal: FilterChange = (key, value) => setGlobalFilters(previous => ({ ...previous, [key]: value }));
   return (
-    <AppContainer>
-      <Header />
-
-      <Separator />
-
-      <SaveFileInfo onCopyPath={handleCopyPath} />
-      <FileUpload saveFileObj={saveFileObj} />
-      <FilterControls
-        hasUploadedSaveFile={hasUploadedSaveFile}
-        hasUploadedSaveData={hasUploadedSaveData}
-        globalFilters={globalFilters}
-        inShowEverythingMode={inShowEverythingMode}
-        onGlobalFilterChange={handleGlobalFilterChange}
-        onShowEverythingToggle={handleShowEverythingToggle}
-      />
-
-      <Separator />
-
-      <TotalProgress dictMapWithSaveData={dictMapWithSaveData} inShowEverythingMode={inShowEverythingMode} />
-      <TabBar
+    <main id="top">
+      <h1>Silksong Completionist</h1>
+      <SaveControls save={save} />
+      <button type="button" aria-pressed={browse} onClick={() => setBrowse(!browse)}>
+        {browse ? "Return to save progress" : "Browse all items"}
+      </button>
+      <Filters value={globalFilters} onChange={changeGlobal} browse={browse} disabled={!data} />
+      {data && !browse && (
+        <p>
+          Total completion: <strong>{formatPercent(data.totalCompletedPercent)}</strong>
+        </p>
+      )}
+      <CategoryNavigation
         activeTab={activeTab}
-        onSelect={handleTabSelect}
-        dictMapWithSaveData={dictMapWithSaveData}
-        inShowEverythingMode={inShowEverythingMode}
-        hasUploadedSaveData={hasUploadedSaveData}
+        onSelect={tab => setActiveTab(tab === activeTab ? "Stats" : tab)}
+        data={data}
+        browse={browse}
       />
-
-      <Separator />
-
-      <TabContainer
-        activeTab={activeTab}
-        dictMapWithSaveData={dictMapWithSaveData}
-        hasUploadedSaveFile={hasUploadedSaveFile}
-        hasUploadedSaveData={hasUploadedSaveData}
-        inShowEverythingMode={inShowEverythingMode}
-        globalFilters={globalFilters}
-        tabFilterMap={tabFilterMap}
-        onTabFilterChange={handleTabFilterChange}
-      />
-
-      <Separator />
-
-      <Footer />
-    </AppContainer>
+      <section ref={contentRef} aria-label="Category content">
+        {data && !(browse && activeTab === "Stats") ? (
+          <CategoryContent name={activeTab} data={data} filters={globalFilters} browse={browse} />
+        ) : (
+          <p>
+            {save.state.isSaveFileDecrypted && !hasSave && !browse
+              ? "This save cannot be used to calculate Silksong progress. You can still edit its JSON."
+              : browse
+                ? "Choose a category to browse."
+                : "Load a save file or browse all items."}
+          </p>
+        )}
+      </section>
+      <footer>
+        <a href="#top">Back to top</a>
+        {footerConfig.links.map(link => (
+          <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer">
+            {link.label}
+          </a>
+        ))}
+        <a
+          href="https://store.steampowered.com/app/1030300/Hollow_Knight_Silksong/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Silksong
+        </a>
+        <span>
+          By <a href={footerConfig.author.url}>{footerConfig.author.name}</a>, with{" "}
+          {footerConfig.contributors.map((person, i) => (
+            <span key={person.url}>
+              {i > 0 && ", "}
+              <a href={person.url}>{person.name}</a>
+            </span>
+          ))}
+        </span>
+      </footer>
+    </main>
   );
 }

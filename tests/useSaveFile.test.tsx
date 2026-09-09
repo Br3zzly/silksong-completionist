@@ -101,7 +101,7 @@ it("preserves active tab and filters while editing, updates progress immediately
   act(() => Reader.pending[0].finish(save));
   fireEvent.click(screen.getByRole("button", { name: /Mask Shards/ }));
   await screen.findByRole("table");
-  const missingToggle = screen.getAllByRole("button", { name: /Showing missing items/ }).at(-1)!;
+  const missingToggle = screen.getByRole("button", { name: /Showing missing items/ });
   fireEvent.click(missingToggle);
   expect(screen.getByText("Mask Shard #1").closest("tr")?.textContent).toContain("[ ]");
   fireEvent.click(screen.getByRole("button", { name: "Edit save file" }));

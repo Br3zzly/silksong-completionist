@@ -1,5 +1,5 @@
 import type { TrackableCategory, NormalizedSection, NormalizedItem } from "../types";
-import { QuillsDescription } from "@/components/features/TabContainer/descriptions";
+import { QuillsDescription } from "@/components/descriptions";
 
 export const mappingSupplies: TrackableCategory = {
   name: "Mapping Supplies",

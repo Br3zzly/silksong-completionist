@@ -1,14 +1,15 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { DragEvent } from "react";
 import { decodeData, encodeData, downloadFile } from "@/utils";
 import { canExportSave, validateSaveText, type SaveValidation } from "@/utils/saveValidation";
-
 export type SaveFileObj = ReturnType<typeof useSaveFile>;
-
 export function useSaveFile() {
   const [fileName, setFileName] = useState("");
   const [isSaveFileDecrypted, setIsSaveFileDecrypted] = useState(false);
-  const [content, setContent] = useState<{ text: string; validation: SaveValidation }>(() => ({
+  const [content, setContent] = useState<{
+    text: string;
+    validation: SaveValidation;
+  }>(() => ({
     text: "",
     validation: validateSaveText(""),
   }));
@@ -20,12 +21,10 @@ export function useSaveFile() {
   const canExportEncrypted = isSaveFileDecrypted && canExportSave(validation);
   const errorMessage = loadError || (isSaveFileDecrypted ? validation.errorMessage : "");
   const saveData = validation.kind === "silksong" ? validation.parsedJson : null;
-
-  const setJsonText = useCallback((text: string) => {
+  const setJsonText = (text: string) => {
     setContent({ text, validation: validateSaveText(text) });
-  }, []);
-
-  const handleFile = useCallback((file: File) => {
+  };
+  const handleFile = (file: File) => {
     const currentRequest = ++requestId.current;
     setFileName(file.name);
     setIsSaveFileDecrypted(false);
@@ -56,72 +55,43 @@ export function useSaveFile() {
     } catch {
       fail();
     }
-  }, []);
-
-  const handleDrop = useCallback(
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      const file = event.dataTransfer.files?.[0];
-      if (file) handleFile(file);
-    },
-    [handleFile]
-  );
-
-  const handleDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
+  };
+  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-  }, []);
-
-  const saveEncrypted = useCallback(() => {
+    const file = event.dataTransfer.files?.[0];
+    if (file) handleFile(file);
+  };
+  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  };
+  const saveEncrypted = () => {
     if (!canExportEncrypted) return;
     downloadFile(encodeData(jsonText), fileName || "save.dat");
-  }, [canExportEncrypted, jsonText, fileName]);
-
+  };
   // Plain downloads also serve as a way to recover unfinished editor drafts.
-  const savePlain = useCallback(() => {
+  const savePlain = () => {
     const nameWithoutExtension = fileName.replace(/\.[^/.]+$/, "");
     downloadFile(jsonText, (nameWithoutExtension || "save") + ".json");
-  }, [jsonText, fileName]);
-
-  const clearFile = useCallback(() => {
+  };
+  const clearFile = () => {
     ++requestId.current;
     setFileName("");
     setIsSaveFileDecrypted(false);
     setContent({ text: "", validation: validateSaveText("") });
     setLoadError("");
-  }, []);
-
-  return useMemo(
-    () => ({
-      state: {
-        fileName,
-        isSaveFileDecrypted,
-        jsonText,
-        parsedJson: validation.parsedJson,
-        saveData,
-        isValidJson,
-        canExportEncrypted,
-        errorMessage,
-        loadId,
-      },
-      handlers: { setJsonText, handleFile, handleDrop, handleDragOver, saveEncrypted, savePlain, clearFile },
-    }),
-    [
+  };
+  return {
+    state: {
       fileName,
       isSaveFileDecrypted,
       jsonText,
-      validation.parsedJson,
+      parsedJson: validation.parsedJson,
       saveData,
       isValidJson,
       canExportEncrypted,
       errorMessage,
       loadId,
-      setJsonText,
-      handleFile,
-      handleDrop,
-      handleDragOver,
-      saveEncrypted,
-      savePlain,
-      clearFile,
-    ]
-  );
+    },
+    handlers: { setJsonText, handleFile, handleDrop, handleDragOver, saveEncrypted, savePlain, clearFile },
+  };
 }

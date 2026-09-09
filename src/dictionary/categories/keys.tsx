@@ -1,5 +1,5 @@
 import type { TrackableCategory } from "@/dictionary/types";
-import { SimpleLocksDescription } from "@/components/features/TabContainer/descriptions";
+import { SimpleLocksDescription } from "@/components/descriptions";
 
 export const keys: TrackableCategory = {
   name: "Keys",

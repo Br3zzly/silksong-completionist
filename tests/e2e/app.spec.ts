@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { createCipheriv } from "node:crypto";
 
-function saveFile(silk: number) {
+function saveFile(silk: number, extra: Record<string, unknown> = {}) {
   const cipher = createCipheriv("aes-256-ecb", Buffer.from("UKu52ePUBwetZ9wNX88o54dnfKRu0T1l"), null);
-  const json = JSON.stringify({ playerData: { silk, permadeathMode: 0, playTime: 100, maxHealthBase: 5 } });
+  const json = JSON.stringify({ playerData: { silk, permadeathMode: 0, playTime: 100, maxHealthBase: 5, ...extra } });
   const payload = Buffer.from(Buffer.concat([cipher.update(json), cipher.final()]).toString("base64"));
   const length = [];
   let n = payload.length;
@@ -32,8 +32,7 @@ test("browse every category, preserve images, and reach the end of the journal",
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/");
   await expect(page.getByRole("button", { name: "Browse for a save file" })).toBeVisible();
-  await page.getByRole("button", { name: "Show content filters" }).click();
-  await page.getByRole("button", { name: /Show me, everything!/ }).click();
+  await page.getByRole("button", { name: "Browse all items" }).click();
   for (const name of [
     "Mask Shards",
     "Spool Fragments",
@@ -71,7 +70,7 @@ test("browse every category, preserve images, and reach the end of the journal",
   });
   await expect(table.locator('tr[data-index="236"]')).toBeAttached();
   const rows = table.locator("tbody tr[data-index]");
-  expect(await rows.count()).toBeLessThan(80);
+  expect(await rows.count()).toBe(237);
   await expect
     .poll(() =>
       table
@@ -91,8 +90,7 @@ test("browse every category, preserve images, and reach the end of the journal",
 
 test("map dialogs support keyboard dismissal and restore focus", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Show content filters" }).click();
-  await page.getByRole("button", { name: /Show me, everything!/ }).click();
+  await page.getByRole("button", { name: "Browse all items" }).click();
   await page.getByRole("button", { name: "Switch to Bellways tab" }).click();
   const map = page.getByRole("button", { name: "Open map location" }).first();
   await map.click();
@@ -151,4 +149,66 @@ test("upload surface works with keyboard and drag-and-drop", async ({ page }) =>
   await browse.dispatchEvent("drop", { dataTransfer: transfer });
   await expect(page.getByText("dropped.dat")).toBeVisible();
   await expect(page.getByRole("heading", { name: "At a glance..." })).toBeVisible();
+});
+
+test("one global filter applies across categories and preserves quill information", async ({ page }) => {
+  await page.goto("/");
+  await page
+    .getByLabel("Upload save file")
+    .setInputFiles(saveFile(0, { hasQuill: true, QuillState: 2, PurchasedBonebottomHeartPiece: true }));
+  await page.getByRole("button", { name: "Switch to Mask Shards tab" }).click();
+  const content = page.getByRole("region", { name: "Category content", exact: true });
+  const filters = page.getByRole("group", { name: "Global filters", exact: true });
+  await expect(filters).toHaveCount(1);
+  await expect(content.getByRole("group")).toHaveCount(0);
+  await expect(content.getByText("Mask Shard #1", { exact: true })).not.toBeAttached();
+  await filters.getByRole("button", { name: "Showing missing items" }).click();
+  await expect(content.getByText("Mask Shard #1", { exact: true })).toBeVisible();
+  await filters.getByRole("button", { name: "spoilers blurred" }).click();
+  await page.getByRole("button", { name: "Switch to Mapping Supplies tab" }).click();
+  await expect(filters.getByRole("button", { name: "spoilers shown" })).toBeAttached();
+  await expect(content.locator(".spoiler")).toHaveCount(0);
+  await expect(content.getByText(/You obtained the/)).toBeVisible();
+  await expect(content.getByRole("img", { name: "Red Quill", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Switch to Mask Shards tab" }).click();
+  await expect(content.getByText("Mask Shard #1", { exact: true })).toBeVisible();
+  await expect(filters.getByRole("button", { name: "Showing all items" })).toBeAttached();
+  await filters.getByRole("button", { name: "Act I", exact: true }).click();
+  await expect(content.getByText("Mask Shard #1", { exact: true })).not.toBeAttached();
+  await page.getByRole("button", { name: "Switch to Spool Fragments tab" }).click();
+  await expect(filters.getByRole("button", { name: "Act I", exact: true })).toHaveAttribute("aria-pressed", "false");
+  await page.getByRole("button", { name: "Switch to Mask Shards tab" }).click();
+  await expect(content.getByText("Mask Shard #1", { exact: true })).not.toBeAttached();
+  await filters.getByRole("button", { name: "Act I", exact: true }).click();
+  await expect(content.getByText("Mask Shard #1", { exact: true })).toBeAttached();
+  await filters.getByRole("button", { name: "Showing all items" }).click();
+  await expect(content.getByText("Mask Shard #1", { exact: true })).not.toBeAttached();
+});
+
+test("platform paths and both save exports are accessible", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open help modal about save file locations" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: "Copy Windows path" }).click();
+  await expect
+    .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+    .toContain("Team Cherry/Hollow Knight Silksong");
+  await dialog.getByLabel("Platform").selectOption("GamePass");
+  await expect(dialog.getByText(/SystemAppData\/wgs/)).toBeVisible();
+  await dialog.getByLabel("Platform").selectOption("Switch");
+  await expect(dialog.getByText(/Homebrew and JKSV/)).toBeVisible();
+  await dialog.getByRole("button", { name: "Close modal" }).click();
+  await page.getByLabel("Upload save file").setInputFiles(saveFile(0));
+  await page.getByRole("button", { name: "Edit save file" }).click();
+  for (const [label, filename] of [
+    ["Download as (encrypted) .dat", "user1.dat"],
+    ["Download as (plain) .json", "user1.json"],
+  ]) {
+    const download = page.waitForEvent("download");
+    await dialog.getByRole("button", { name: label }).click();
+    expect((await download).suggestedFilename()).toBe(filename);
+  }
+  await dialog.getByRole("button", { name: "Close modal" }).click();
+  await expect(page.getByRole("button", { name: "Edit save file" })).toBeFocused();
 });

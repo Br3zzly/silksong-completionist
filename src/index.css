@@ -1,60 +1,223 @@
-@import "tailwindcss";
-
-@custom-variant hover (&:hover);
-
-html {
-  scrollbar-gutter: stable both-edges;
-  background-color: black;
+/* Minimal layout and accessibility rules for the functional rebuild baseline. */
+:root {
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: #222;
+  background: #fff;
 }
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-    opacity: 0;
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+main {
+  max-width: 1100px;
+  margin: auto;
+  padding: 16px;
+}
+h1 {
+  font-size: 1.5rem;
+}
+h2 {
+  font-size: 1.25rem;
+}
+h3 {
+  font-size: 1.1rem;
+}
+button,
+select,
+input {
+  font: inherit;
+}
+button,
+select,
+summary {
+  min-height: 44px;
+  cursor: pointer;
+}
+button {
+  padding: 6px 10px;
+}
+button:disabled {
+  cursor: default;
+}
+button[aria-pressed="true"] {
+  outline: 2px solid currentColor;
+  outline-offset: -3px;
+}
+:focus-visible {
+  outline: 2px solid #174ea6;
+  outline-offset: 2px;
+}
+.controls,
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+fieldset,
+details,
+section,
+footer {
+  margin: 16px 0;
+}
+fieldset {
+  min-width: 0;
+}
+.categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+.categories small {
+  display: block;
+}
+img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+code,
+.save-controls span {
+  overflow-wrap: anywhere;
+}
+code {
+  display: block;
+}
+dl > div {
+  margin: 8px 0;
+}
+dt {
+  font-weight: 600;
+}
+dd {
+  margin: 0;
+}
+.table-scroll {
+  overflow: auto;
+  max-height: 800px;
+  border: 1px solid #ccc;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+th,
+td {
+  padding: 8px;
+  border-bottom: 1px solid #ccc;
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
+}
+.entry-image {
+  position: relative;
+  width: 48px;
+  min-height: 48px;
+}
+.entry-image img {
+  width: 48px;
+  height: 48px;
+}
+.entry-image .completion-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+.entry-image small {
+  display: block;
+}
+.spoiler,
+.spoiler-self {
+  filter: blur(4px);
+}
+tr:hover .spoiler,
+tr:focus-within .spoiler,
+.spoiler-self:hover,
+.spoiler-self:focus-within {
+  filter: none;
+}
+.modal {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 16px;
+  border: 0;
+  background: #0008;
+}
+.modal[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-panel {
+  position: relative;
+  background: white;
+  color: #222;
+  width: min(100%, 760px);
+  max-height: 90dvh;
+  overflow: auto;
+  padding: 20px;
+}
+.modal-content > h2 {
+  margin-top: 0;
+  padding-right: 44px;
+}
+.modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 44px;
+}
+iframe {
+  width: 100%;
+  height: 50dvh;
+  border: 1px solid #ccc;
+}
+.editor-resize {
+  height: 400px;
+  min-height: 200px;
+  max-height: 600px;
+  resize: vertical;
+  overflow: hidden;
+  border: 1px solid #ccc;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+@media (max-width: 600px) {
+  main {
+    padding: 12px;
   }
-  30% {
-    opacity: 0;
+  .categories {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  50% {
-    opacity: 0.9;
+  table {
+    min-width: 700px;
   }
-  70% {
-    opacity: 0;
+  .modal-panel {
+    padding: 16px;
   }
-  100% {
-    background-position: 200% 0;
-    opacity: 0;
+  .controls button {
+    flex-grow: 1;
   }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.styled-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-}
-.styled-scrollbar:hover {
-  scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
-}
-.styled-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-.styled-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.styled-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-}
-.styled-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
 }
