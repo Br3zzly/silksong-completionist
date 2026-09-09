@@ -29,3 +29,10 @@ dist-ssr
 .verification/
 playwright-report/
 test-results/
+
+# Local game asset rip (reference only)
+/reference-assets/
+
+# Generated menu capture plugin files
+/tools/menu-capture/bin/
+/tools/menu-capture/obj/

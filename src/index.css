@@ -2,8 +2,9 @@
 :root {
   font-family: system-ui, sans-serif;
   line-height: 1.5;
-  color: #222;
-  background: #fff;
+  color-scheme: dark;
+  color: #eee;
+  background: #080707;
 }
 * {
   box-sizing: border-box;
@@ -11,13 +12,67 @@
 body {
   margin: 0;
 }
-main {
+.menu-background-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: var(--background-height, 100lvh);
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  transform: translateZ(0);
+  transform-origin: top left;
+}
+.menu-background-poster,
+.menu-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--background-width, 100vw);
+  height: var(--background-height, 100lvh);
+}
+.menu-background-poster {
+  background: #080707 center / cover no-repeat;
+}
+.menu-background {
+  object-fit: cover;
+}
+.background-picker {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+main,
+.site-header {
   max-width: 1100px;
-  margin: auto;
+  width: calc(100% - 32px);
+  margin: 24px auto;
   padding: 16px;
+}
+main {
+  background: rgb(8 8 10 / 78%);
+}
+.site-header {
+  margin: 8px auto 0;
+  padding-block: 0;
+}
+a {
+  color: inherit;
 }
 h1 {
   font-size: 1.5rem;
+}
+.site-title {
+  width: min(100%, 480px);
+  margin: 0 auto;
+}
+.site-title-art {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 h2 {
   font-size: 1.25rem;
@@ -116,7 +171,7 @@ td {
 th {
   position: sticky;
   top: 0;
-  background: #fff;
+  background: #181818;
   z-index: 1;
 }
 .entry-image {
@@ -166,6 +221,7 @@ tr:focus-within .spoiler,
 }
 .modal-panel {
   position: relative;
+  color-scheme: light;
   background: white;
   color: #222;
   width: min(100%, 760px);
@@ -205,8 +261,21 @@ iframe {
   clip-path: inset(50%);
 }
 @media (max-width: 600px) {
-  main {
+  .menu-background-poster {
+    background-position: 85% center;
+  }
+  .menu-background {
+    object-position: 85% center;
+  }
+  main,
+  .site-header {
+    width: calc(100% - 16px);
+    margin: 12px auto;
     padding: 12px;
+  }
+  .site-header {
+    margin: 8px auto 0;
+    padding-block: 0;
   }
   .categories {
     grid-template-columns: repeat(2, minmax(0, 1fr));

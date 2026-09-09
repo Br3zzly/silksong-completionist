@@ -10,6 +10,8 @@ import { SaveControls } from "./SaveControls";
 import { Filters } from "./Filters";
 import { CategoryNavigation } from "./CategoryNavigation";
 import { CategoryContent } from "./CategoryContent";
+import { MenuBackground } from "./MenuBackground";
+import titleArtwork from "@/assets/branding/silksong-completionist-title.webp";
 
 export default function App() {
   const save = useSaveFile();
@@ -40,61 +42,75 @@ export default function App() {
   }, [activeTab]);
   const changeGlobal: FilterChange = (key, value) => setGlobalFilters(previous => ({ ...previous, [key]: value }));
   return (
-    <main id="top">
-      <h1>Silksong Completionist</h1>
-      <SaveControls save={save} />
-      <button type="button" aria-pressed={browse} onClick={() => setBrowse(!browse)}>
-        {browse ? "Return to save progress" : "Browse all items"}
-      </button>
-      <Filters value={globalFilters} onChange={changeGlobal} browse={browse} disabled={!data} />
-      {data && !browse && (
-        <p>
-          Total completion: <strong>{formatPercent(data.totalCompletedPercent)}</strong>
-        </p>
-      )}
-      <CategoryNavigation
-        activeTab={activeTab}
-        onSelect={tab => setActiveTab(tab === activeTab ? "Stats" : tab)}
-        data={data}
-        browse={browse}
-      />
-      <section ref={contentRef} aria-label="Category content">
-        {data && !(browse && activeTab === "Stats") ? (
-          <CategoryContent name={activeTab} data={data} filters={globalFilters} browse={browse} />
-        ) : (
+    <>
+      <header id="top" className="site-header">
+        <h1 className="site-title">
+          <img
+            className="site-title-art"
+            src={titleArtwork}
+            alt="Silksong Completionist"
+            width={2120}
+            height={1180}
+            fetchPriority="high"
+          />
+        </h1>
+      </header>
+      <main>
+        <MenuBackground />
+        <SaveControls save={save} />
+        <button type="button" aria-pressed={browse} onClick={() => setBrowse(!browse)}>
+          {browse ? "Return to save progress" : "Browse all items"}
+        </button>
+        <Filters value={globalFilters} onChange={changeGlobal} browse={browse} disabled={!data} />
+        {data && !browse && (
           <p>
-            {save.state.isSaveFileDecrypted && !hasSave && !browse
-              ? "This save cannot be used to calculate Silksong progress. You can still edit its JSON."
-              : browse
-                ? "Choose a category to browse."
-                : "Load a save file or browse all items."}
+            Total completion: <strong>{formatPercent(data.totalCompletedPercent)}</strong>
           </p>
         )}
-      </section>
-      <footer>
-        <a href="#top">Back to top</a>
-        {footerConfig.links.map(link => (
-          <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer">
-            {link.label}
-          </a>
-        ))}
-        <a
-          href="https://store.steampowered.com/app/1030300/Hollow_Knight_Silksong/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Silksong
-        </a>
-        <span>
-          By <a href={footerConfig.author.url}>{footerConfig.author.name}</a>, with{" "}
-          {footerConfig.contributors.map((person, i) => (
-            <span key={person.url}>
-              {i > 0 && ", "}
-              <a href={person.url}>{person.name}</a>
-            </span>
+        <CategoryNavigation
+          activeTab={activeTab}
+          onSelect={tab => setActiveTab(tab === activeTab ? "Stats" : tab)}
+          data={data}
+          browse={browse}
+        />
+        <section ref={contentRef} aria-label="Category content">
+          {data && !(browse && activeTab === "Stats") ? (
+            <CategoryContent name={activeTab} data={data} filters={globalFilters} browse={browse} />
+          ) : (
+            <p>
+              {save.state.isSaveFileDecrypted && !hasSave && !browse
+                ? "This save cannot be used to calculate Silksong progress. You can still edit its JSON."
+                : browse
+                  ? "Choose a category to browse."
+                  : "Load a save file or browse all items."}
+            </p>
+          )}
+        </section>
+        <footer>
+          <a href="#top">Back to top</a>
+          {footerConfig.links.map(link => (
+            <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer">
+              {link.label}
+            </a>
           ))}
-        </span>
-      </footer>
-    </main>
+          <a
+            href="https://store.steampowered.com/app/1030300/Hollow_Knight_Silksong/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Silksong
+          </a>
+          <span>
+            By <a href={footerConfig.author.url}>{footerConfig.author.name}</a>, with{" "}
+            {footerConfig.contributors.map((person, i) => (
+              <span key={person.url}>
+                {i > 0 && ", "}
+                <a href={person.url}>{person.name}</a>
+              </span>
+            ))}
+          </span>
+        </footer>
+      </main>
+    </>
   );
 }
