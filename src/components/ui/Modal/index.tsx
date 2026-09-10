@@ -55,13 +55,28 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
     >
       <span data-focus-guard tabIndex={0} className="sr-only" onFocus={() => focusBoundary(true)} />
       <div className={"modal-panel " + (className ?? "")}>
-        <button ref={closeRef} onClick={onClose} className="modal-close" aria-label="Close modal">
-          &times;
-        </button>
-        <div className="modal-content">
-          <h2 id={titleId}>{title}</h2>
-          {children}
+        <div className="panel-frame" aria-hidden="true">
+          <span className="panel-corner panel-corner-top-left" />
+          <span className="panel-corner panel-corner-top-right" />
+          <span className="panel-corner panel-corner-bottom-left" />
+          <span className="panel-corner panel-corner-bottom-right" />
         </div>
+        <button
+          ref={closeRef}
+          type="button"
+          onClick={onClose}
+          className="modal-close"
+          aria-label="Close modal"
+          title="Close"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+            <path d="m5 5 14 14M19 5 5 19" />
+          </svg>
+        </button>
+        <div className="modal-heading">
+          <h2 id={titleId}>{title}</h2>
+        </div>
+        <div className="modal-content">{children}</div>
       </div>
       <span data-focus-guard tabIndex={0} className="sr-only" onFocus={() => focusBoundary(false)} />
     </dialog>,

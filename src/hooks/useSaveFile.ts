@@ -1,5 +1,4 @@
 import { useRef, useState } from "react";
-import type { DragEvent } from "react";
 import { decodeData, encodeData, downloadFile } from "@/utils";
 import { canExportSave, validateSaveText, type SaveValidation } from "@/utils/saveValidation";
 export type SaveFileObj = ReturnType<typeof useSaveFile>;
@@ -56,14 +55,6 @@ export function useSaveFile() {
       fail();
     }
   };
-  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    const file = event.dataTransfer.files?.[0];
-    if (file) handleFile(file);
-  };
-  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-  };
   const saveEncrypted = () => {
     if (!canExportEncrypted) return;
     downloadFile(encodeData(jsonText), fileName || "save.dat");
@@ -92,6 +83,6 @@ export function useSaveFile() {
       errorMessage,
       loadId,
     },
-    handlers: { setJsonText, handleFile, handleDrop, handleDragOver, saveEncrypted, savePlain, clearFile },
+    handlers: { setJsonText, handleFile, saveEncrypted, savePlain, clearFile },
   };
 }

@@ -14,6 +14,8 @@ dist-ssr
 
 # Environment variables
 .env
+.env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*
@@ -29,6 +31,7 @@ dist-ssr
 .verification/
 playwright-report/
 test-results/
+coverage/
 
 # Local game asset rip (reference only)
 /reference-assets/

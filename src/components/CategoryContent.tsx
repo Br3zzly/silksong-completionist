@@ -2,6 +2,9 @@ import type { CategorySection, DictMapWithSaveData, NormalizedItem } from "@/dic
 import { filterSections, type Filters } from "@/utils/collection";
 import { MapButton } from "./ui/MapButton";
 import { LazyImage } from "./ui/LazyImage";
+import { TAB_GROUPS } from "./categories";
+import collectedFull from "@/assets/ui/collected-full.png";
+import collectedEmpty from "@/assets/ui/collected-empty.png";
 
 function Description({
   description,
@@ -52,13 +55,14 @@ function ItemTable({
 }) {
   const journal = categoryName === "Hunter's Journal",
     bosses = categoryName === "Bosses";
+  const showCompletion = TAB_GROUPS.core.some(tab => tab.tabId === categoryName);
   return (
     <div className="table-scroll" tabIndex={0} role="region" aria-label={`${categoryName} entries`}>
       <table>
         <thead>
           <tr>
             <th scope="col">{journal || bosses ? "Entry" : "Collected"}</th>
-            {!journal && !bosses && <th scope="col">Completion</th>}
+            {showCompletion && <th scope="col">Completion</th>}
             <th scope="col">Name</th>
             {journal ? (
               <>
@@ -93,12 +97,17 @@ function ItemTable({
                   {journal || bosses ? (
                     <EntryImage item={item} journal={journal} />
                   ) : (
-                    <span aria-label={item.saveMeta?.unlocked ? "Collected" : "Not collected"}>
-                      {item.saveMeta?.unlocked ? "[x]" : "[ ]"}
-                    </span>
+                    <img
+                      className="collection-status"
+                      src={item.saveMeta?.unlocked ? collectedFull : collectedEmpty}
+                      alt={item.saveMeta?.unlocked ? "Collected" : "Not collected"}
+                      title={item.saveMeta?.unlocked ? "Collected" : "Not collected"}
+                      width={24}
+                      height={24}
+                    />
                   )}
                 </td>
-                {!journal && !bosses && (
+                {showCompletion && (
                   <td className="completion-percentage">
                     {item.completionPercent ? `+${item.completionPercent}%` : ""}
                   </td>

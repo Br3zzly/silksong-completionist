@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, type CSSProperties } from "react";
 import { useSaveFile } from "@/hooks/useSaveFile";
+import { useFileDropZone } from "@/hooks/useFileDropZone";
 import { NORMALISED_DICT_MAP } from "@/dictionary";
 import { computeDictMapWithSaveData } from "@/utils/data";
 import { defaultFilters, type FilterChange } from "@/utils/collection";
@@ -17,6 +18,7 @@ import titleArtwork from "@/assets/branding/silksong-completionist-title.webp";
 
 export default function App() {
   const save = useSaveFile();
+  const dropZone = useFileDropZone(save.handlers.handleFile);
   const [activeTab, setActiveTab] = useState<TabId>("Stats");
   const [browse, setBrowse] = useState(false);
   const [globalFilters, setGlobalFilters] = useState(defaultFilters);
@@ -65,13 +67,26 @@ export default function App() {
           />
         </h1>
       </header>
-      <main>
+      <main
+        {...dropZone.handlers}
+        data-drag-active={dropZone.active}
+        style={{ "--save-drop-hint-top": `${dropZone.hintTop}px` } as CSSProperties}
+      >
         <div className="panel-frame" aria-hidden="true">
           <span className="panel-corner panel-corner-top-left" />
           <span className="panel-corner panel-corner-top-right" />
           <span className="panel-corner panel-corner-bottom-left" />
           <span className="panel-corner panel-corner-bottom-right" />
         </div>
+        <div className="save-drop-overlay" aria-hidden="true">
+          <div className="save-drop-hint">
+            <span className="save-drop-orb" />
+            <span>Drop save file</span>
+          </div>
+        </div>
+        <span className="sr-only" role="status">
+          {dropZone.active ? "Drop save file anywhere in this panel" : ""}
+        </span>
         <div className="save-menu-layout">
           <div className="save-menu-controls">
             <SaveControls save={save}>
@@ -84,16 +99,19 @@ export default function App() {
         </div>
         {data && (
           <>
-            <Filters value={globalFilters} onChange={changeGlobal} browse={browse} />
             <CategoryNavigation
               activeTab={activeTab}
               onSelect={tab => setActiveTab(tab === activeTab ? "Stats" : tab)}
               data={data}
               browse={browse}
+              filters={<Filters value={globalFilters} onChange={changeGlobal} browse={browse} />}
             />
             <section ref={contentRef} aria-label="Category content">
               {activeTab !== "Stats" && (
-                <CategoryContent name={activeTab} data={data} filters={globalFilters} browse={browse} />
+                <>
+                  <hr className="category-content-divider" aria-hidden="true" />
+                  <CategoryContent name={activeTab} data={data} filters={globalFilters} browse={browse} />
+                </>
               )}
             </section>
           </>
@@ -103,6 +121,22 @@ export default function App() {
         )}
       </main>
       <footer className="site-footer">
+        <div className="footer-credit">
+          <span className="footer-credit-label">Created by</span>
+          <a className="footer-author" href={footerConfig.author.url}>
+            {footerConfig.author.name}
+          </a>
+        </div>
+        <div className="footer-credit">
+          <span className="footer-credit-label">With help from</span>
+          <div className="footer-contributors">
+            {footerConfig.contributors.map(person => (
+              <a key={person.url} href={person.url}>
+                {person.name}
+              </a>
+            ))}
+          </div>
+        </div>
         <nav className="footer-links" aria-label="Footer links">
           {footerConfig.links.map(link => (
             <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer">
@@ -117,15 +151,6 @@ export default function App() {
             Silksong
           </a>
         </nav>
-        <span>
-          By <a href={footerConfig.author.url}>{footerConfig.author.name}</a>, with{" "}
-          {footerConfig.contributors.map((person, i) => (
-            <span key={person.url}>
-              {i > 0 && ", "}
-              <a href={person.url}>{person.name}</a>
-            </span>
-          ))}
-        </span>
       </footer>
       <a className="back-to-top" href="#top" aria-label="Back to top" title="Back to top">
         <img src={backToTopArrow} alt="" width={44} height={44} />

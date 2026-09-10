@@ -103,7 +103,9 @@ it("preserves active tab and filters while editing, updates progress immediately
   await screen.findByRole("table");
   const missingToggle = screen.getByRole("button", { name: /Showing missing items/ });
   fireEvent.click(missingToggle);
-  expect(screen.getByText("Mask Shard #1").closest("tr")?.textContent).toContain("[ ]");
+  expect(
+    screen.getByText("Mask Shard #1").closest("tr")?.querySelector(".collection-status")?.getAttribute("alt")
+  ).toBe("Not collected");
   fireEvent.click(screen.getByRole("button", { name: "Edit save file" }));
   const editor = await screen.findByRole("textbox", { name: "JSON editor" });
   fireEvent.change(editor, {
@@ -112,7 +114,9 @@ it("preserves active tab and filters while editing, updates progress immediately
     },
   });
   expect(screen.getByRole("table")).toBeTruthy();
-  expect(screen.getByText("Mask Shard #1").closest("tr")?.textContent).toContain("[x]");
+  expect(
+    screen.getByText("Mask Shard #1").closest("tr")?.querySelector(".collection-status")?.getAttribute("alt")
+  ).toBe("Collected");
   expect(screen.getByRole("button", { name: /Showing all items/ })).toBeTruthy();
   expect(screen.getByText("0.25%")).toBeTruthy();
   expect(screen.getByRole("heading", { name: "Mask Shards" })).toBeTruthy();

@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import { createCipheriv } from "node:crypto";
 
 async function selectBackground(page: Page, style: string) {
-  const name = style === "song" ? "Switch to Song (dark mode)" : "Switch to Hornet (light mode)";
+  const name = style === "song" ? "Switch to Song" : "Switch to Hornet";
   const toggle = page.getByRole("button", { name, exact: true });
   if (await toggle.count()) await toggle.click();
 }
@@ -42,7 +42,7 @@ test("background styles play, loop, and persist on desktop and mobile", async ({
   await page.goto("/");
   const video = page.locator("video.menu-background");
   const picker = page.locator(".background-toggle");
-  await expect(picker).toHaveAccessibleName("Switch to Song (dark mode)");
+  await expect(picker).toHaveAccessibleName("Switch to Song");
   const toggleBounds = (await picker.boundingBox())!;
   expect(toggleBounds.width).toBeGreaterThanOrEqual(44);
   expect(toggleBounds.height).toBeGreaterThanOrEqual(44);
@@ -85,7 +85,7 @@ test("background styles play, loop, and persist on desktop and mobile", async ({
   }
   videos.length = 0;
   await page.reload();
-  await expect(picker).toHaveAccessibleName("Switch to Hornet (light mode)");
+  await expect(picker).toHaveAccessibleName("Switch to Hornet");
   await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime)).toBeGreaterThan(0.1);
   expect(videos.every(url => url.includes("song-menu"))).toBe(true);
   await expect(page.getByRole("button", { name: /^(Pause|Play) background$/ })).toHaveCount(0);
@@ -221,7 +221,7 @@ test("reduced motion uses the still background without downloading a video", asy
   await expect(poster).toHaveCSS("background-image", /song-menu/);
   await expect(page.locator("video.menu-background")).toHaveCount(0);
   expect(videos).toEqual([]);
-  const toggle = page.getByRole("button", { name: "Switch to Hornet (light mode)", exact: true });
+  const toggle = page.getByRole("button", { name: "Switch to Hornet", exact: true });
   await toggle.focus();
   await page.keyboard.press("Enter");
   await expect(poster).toHaveCSS("background-image", /hornet-menu/);
@@ -482,7 +482,18 @@ test("upload surface works with keyboard and drag-and-drop", async ({ page }) =>
     transfer.items.add(new File([new Uint8Array(data)], "dropped.dat", { type: "application/octet-stream" }));
     return transfer;
   }, bytes);
-  await browse.dispatchEvent("drop", { dataTransfer: transfer });
+  const panel = page.getByRole("main");
+  const bounds = await panel.boundingBox();
+  await panel.dispatchEvent("dragenter", { dataTransfer: transfer });
+  await panel.dispatchEvent("dragover", { dataTransfer: transfer });
+  await expect(panel).toHaveAttribute("data-drag-active", "true");
+  await expect(panel.locator(".save-drop-overlay")).toHaveCSS("opacity", "1");
+  expect(await panel.boundingBox()).toEqual(bounds);
+  await browse.dispatchEvent("dragenter", { dataTransfer: transfer });
+  await panel.dispatchEvent("dragleave", { dataTransfer: transfer });
+  await expect(panel).toHaveAttribute("data-drag-active", "true");
+  await panel.dispatchEvent("drop", { dataTransfer: transfer });
+  await expect(panel).toHaveAttribute("data-drag-active", "false");
   await expect(page.getByText("dropped.dat")).toBeVisible();
   await expect(page.locator('.save-summary[data-loaded="true"]')).toBeVisible();
 });
@@ -526,13 +537,21 @@ test("platform paths and both save exports are accessible", async ({ page, conte
   await page.goto("/");
   await page.getByRole("button", { name: "Open help modal about save file locations" }).click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByRole("button", { name: "Copy Windows path" }).click();
+  await expect(dialog.getByRole("combobox")).toHaveCount(0);
+  const platforms = dialog.getByRole("group", { name: "Platform", exact: true });
+  await expect(platforms.getByRole("button", { name: "PC (Steam & Others)", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true"
+  );
+  await dialog.getByRole("button", { name: "Windows save path, click to copy", exact: true }).click();
+  await expect(dialog.getByRole("status").filter({ hasText: "Copied" })).toBeVisible();
   await expect
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
     .toContain("Team Cherry/Hollow Knight Silksong");
-  await dialog.getByLabel("Platform").selectOption("GamePass");
+  await platforms.getByRole("button", { name: "GamePass (Windows)", exact: true }).click();
+  await expect(platforms.locator('[aria-pressed="true"]')).toHaveCount(1);
   await expect(dialog.getByText(/SystemAppData\/wgs/)).toBeVisible();
-  await dialog.getByLabel("Platform").selectOption("Switch");
+  await platforms.getByRole("button", { name: "Nintendo Switch", exact: true }).click();
   await expect(dialog.getByText(/Homebrew and JKSV/)).toBeVisible();
   await dialog.getByRole("button", { name: "Close modal" }).click();
   await page.getByLabel("Upload save file").setInputFiles(saveFile(0));

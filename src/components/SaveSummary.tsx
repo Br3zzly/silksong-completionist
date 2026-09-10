@@ -143,7 +143,7 @@ export function SaveSummary({ data, loadId }: { data: DictMapWithSaveData | null
           </div>
         </div>
         <span className="summary-percentage completion-percentage" aria-hidden="true">
-          {data ? formatPercent(displayedCompletion) : "-"}
+          {data ? formatPercent(displayedCompletion) : null}
         </span>
       </div>
       <dl className="summary-stats">

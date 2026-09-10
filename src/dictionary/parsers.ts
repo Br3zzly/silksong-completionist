@@ -111,10 +111,6 @@ export function createSaveParser(saveData: SilksongSave) {
   return parse;
 }
 
-export function isItemUnlockedInPlayerSave(info: ParsingInfo | ParsingInfoAnyOf, save: SilksongSave): ParseResult {
-  return createSaveParser(save)(info);
-}
-
 export function isItemInCurrentGameMode(
   item: { onlyFoundInClassicMode?: boolean; onlyFoundInSteelSoulMode?: boolean },
   save: SilksongSave

@@ -12,11 +12,7 @@ export function SaveControls({ save, children }: { save: SaveFileObj; children?:
   const [helpOpen, setHelpOpen] = useState(false);
   return (
     <>
-      <div
-        className="save-controls controls"
-        onDrop={save.handlers.handleDrop}
-        onDragOver={save.handlers.handleDragOver}
-      >
+      <div className="save-controls controls">
         <MenuButton type="button" aria-label="Browse for a save file" onClick={() => input.current?.click()}>
           {save.state.fileName ? "Replace save" : "Load save"}
         </MenuButton>
@@ -56,7 +52,7 @@ export function SaveControls({ save, children }: { save: SaveFileObj; children?:
         )}
       </div>
       <p role="status">{save.state.errorMessage}</p>
-      <Modal isOpen={editorOpen} onClose={() => setEditorOpen(false)} title="Save File Editor">
+      <Modal isOpen={editorOpen} onClose={() => setEditorOpen(false)} title="Edit save" className="modal-editor">
         <SaveEditor save={save} />
       </Modal>
       <Modal isOpen={helpOpen} onClose={() => setHelpOpen(false)} title="Where can I find my save file?">

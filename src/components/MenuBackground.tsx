@@ -27,7 +27,7 @@ export function MenuBackground() {
   const layerRef = useRef<HTMLDivElement>(null);
   const background = backgrounds[style];
   const nextStyle = style === "hornet" ? "song" : "hornet";
-  const switchLabel = `Switch to ${backgrounds[nextStyle].label} (${nextStyle === "song" ? "dark" : "light"} mode)`;
+  const switchLabel = `Switch to ${backgrounds[nextStyle].label}`;
 
   useLayoutEffect(() => {
     const layer = layerRef.current;
