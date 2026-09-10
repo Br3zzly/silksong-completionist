@@ -4,7 +4,7 @@
 
 For all the completionists out there, this app helps you track your in-game progress using your save file.
 
-![Mapping Supplies (Quills) tracked on Silksong Completionist](./screenshots/quills.png)
+![Silksong Completionist menu and progress overview](./screenshots/menu_layout.png)
 
 ## ⚙️ Usage
 

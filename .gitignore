@@ -14,11 +14,12 @@ dist-ssr
 
 # Environment variables
 .env
+.env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.github/*
 .idea
 .DS_Store
 *.suo
@@ -26,3 +27,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+.verification/
+playwright-report/
+test-results/
+coverage/
+
+# Local game asset rip (reference only)
+/reference-assets/
+
+# Generated menu capture plugin files
+/tools/menu-capture/bin/
+/tools/menu-capture/obj/
+
+# Local Codex repository memory
+/AGENTS.md

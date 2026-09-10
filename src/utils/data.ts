@@ -1,4 +1,4 @@
-import { isItemUnlockedInPlayerSave, isItemInCurrentGameMode } from "@/dictionary/parsers";
+import { createSaveParser, isItemInCurrentGameMode } from "@/dictionary/parsers";
 import type {
   NormalisedDictMap,
   NormalizedCategory,
@@ -7,9 +7,11 @@ import type {
   ItemPath,
 } from "@/dictionary/types";
 
+import type { SilksongSave } from "./saveValidation";
+
 export function computeDictMapWithSaveData(
   normalisedDict: NormalisedDictMap,
-  parsedJson: unknown,
+  parsedJson: SilksongSave | null,
   inShowEverythingMode: boolean
 ): DictMapWithSaveData {
   if (inShowEverythingMode) {
@@ -20,6 +22,9 @@ export function computeDictMapWithSaveData(
       completedItemPaths: [] as ItemPath[],
     };
   }
+
+  if (!parsedJson) throw new Error("Validated save data is required to compute progress.");
+  const parseItem = createSaveParser(parsedJson);
 
   // Filter by given save file's current game mode first, then track missing/completed items
   let totalCompletedPercent = 0;
@@ -64,7 +69,7 @@ export function computeDictMapWithSaveData(
             continue; // Skip items not in current game mode
           }
 
-          const { unlocked, returnValue } = isItemUnlockedInPlayerSave(item.parsingInfo, parsedJson);
+          const { unlocked, returnValue } = parseItem(item.parsingInfo);
           const killsAchieved = typeof returnValue === "number" ? returnValue : undefined;
 
           const isJournalEntry =
@@ -86,8 +91,8 @@ export function computeDictMapWithSaveData(
                 ? {
                     journalMeta: {
                       killsAchieved,
-                      hasBeenEncountered: isJournalEntry ? killsAchieved > 0 : undefined,
-                      hasBeenCompleted: isJournalEntry ? isJournalEntryComplete : undefined,
+                      hasBeenEncountered: killsAchieved > 0,
+                      hasBeenCompleted: isJournalEntryComplete,
                     },
                   }
                 : {}),
@@ -143,24 +148,6 @@ export function computeDictMapWithSaveData(
     missingItemPaths,
     completedItemPaths,
   };
-}
-
-export function getActFilterText(
-  actFilter?: Set<1 | 2 | 3>,
-  { returnEmpty = false }: { returnEmpty?: boolean } = {}
-): string {
-  if (returnEmpty) return "";
-
-  if (!actFilter || actFilter.size === 0) {
-    return "from zero ⚠️ Acts";
-  } else if (actFilter.size === 3) {
-    return "from all Acts";
-  } else {
-    const acts = Array.from(actFilter)
-      .sort()
-      .map(act => `Act ${["I", "II", "III"][act - 1]}`);
-    return `from ${acts.join(", ")}`;
-  }
 }
 
 export function toggleActInFilter(actFilter: Set<1 | 2 | 3>, act: 1 | 2 | 3): Set<1 | 2 | 3> {

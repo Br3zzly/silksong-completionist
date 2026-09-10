@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>Silksong.MenuCapture</AssemblyName>
+    <GameManaged>$(GameDir)/Hollow Knight Silksong_Data/Managed</GameManaged>
+    <BepInExDir Condition="'$(BepInExDir)' == ''">$(GameDir)/BepInEx</BepInExDir>
+    <EnableDefaultItems>true</EnableDefaultItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BepInEx" HintPath="$(BepInExDir)/core/BepInEx.dll" Private="false" />
+    <Reference Include="$(GameManaged)/UnityEngine*.dll" Private="false" />
+    <Reference Include="Assembly-CSharp" HintPath="$(GameManaged)/Assembly-CSharp.dll" Private="false" />
+    <Reference Include="PlayMaker" HintPath="$(GameManaged)/PlayMaker.dll" Private="false" />
+  </ItemGroup>
+  <Target Name="CheckReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(GameManaged)/Assembly-CSharp.dll')" Text="Set GameDir to the Silksong installation folder." />
+    <Error Condition="!Exists('$(BepInExDir)/core/BepInEx.dll')" Text="Set BepInExDir to a BepInEx 5 folder containing core/BepInEx.dll." />
+  </Target>
+</Project>
