@@ -5,7 +5,7 @@ import { encodeData, downloadFile } from "@/utils";
 import App from "@/components/App";
 
 vi.mock("@/utils", async importOriginal => ({ ...(await importOriginal<object>()), downloadFile: vi.fn() }));
-vi.mock("@monaco-editor/react", () => ({
+vi.mock("@/components/ui/LocalSaveEditor", () => ({
   default: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
     <textarea aria-label="JSON editor" value={value} onChange={event => onChange(event.target.value)} />
   ),

@@ -16,9 +16,14 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "src"),
-    },
+    alias: [
+      { find: "@", replacement: path.resolve(__dirname, "src") },
+      // Monaco also embeds DOMPurify; the npm override alone does not replace that copy.
+      {
+        find: /^.*\/dompurify\/dompurify\.js$/,
+        replacement: path.resolve(__dirname, "node_modules/dompurify/dist/purify.es.mjs"),
+      },
+    ],
   },
   build: {
     chunkSizeWarningLimit: 800, // default is 500 kB

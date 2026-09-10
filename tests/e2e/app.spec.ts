@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { createCipheriv } from "node:crypto";
+import { readFile, readdir } from "node:fs/promises";
 
 async function selectBackground(page: Page, style: string) {
   const name = style === "song" ? "Switch to Song" : "Switch to Hornet";
@@ -566,4 +567,70 @@ test("platform paths and both save exports are accessible", async ({ page, conte
   }
   await dialog.getByRole("button", { name: "Close modal" }).click();
   await expect(page.getByRole("button", { name: "Edit save file" })).toBeFocused();
+});
+
+test("local save editor loads patched DOMPurify and supports editing without a CDN", async ({ page }) => {
+  const errors: string[] = [];
+  const editorRequests: string[] = [];
+  const workerUrls: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  page.on("request", request => {
+    if (/LocalSaveEditor|cdn\.jsdelivr\.net|unpkg\.com/.test(request.url())) editorRequests.push(request.url());
+  });
+  page.on("worker", worker => workerUrls.push(worker.url()));
+
+  await page.goto("/");
+  expect(editorRequests).toEqual([]);
+  await page.getByLabel("Upload save file").setInputFiles(saveFile(0));
+  await page.getByRole("button", { name: "Edit save file", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  const editor = dialog.locator(".monaco-editor").first();
+  await expect(editor).toBeVisible();
+  await expect.poll(() => workerUrls.some(url => /json\.worker/.test(url))).toBe(true);
+  expect(editorRequests.some(url => url.includes("LocalSaveEditor"))).toBe(true);
+  expect(editorRequests.every(url => new URL(url).origin === new URL(page.url()).origin)).toBe(true);
+
+  await editor.locator(".view-lines").click();
+  await page.keyboard.press("Control+f");
+  await expect(dialog.locator(".find-widget.visible")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press("Control+a");
+  await page.keyboard.press("Backspace");
+  await page.keyboard.insertText("invalid json");
+  await expect(dialog.locator(".editor-validity")).toHaveText("Invalid JSON");
+  await expect(dialog.getByRole("button", { name: "Download as (encrypted) .dat" })).toBeDisabled();
+
+  const edited = { playerData: { silk: 0, permadeathMode: 0, playTime: 100, maxHealthBase: 5, geo: 2345 } };
+  await page.keyboard.press("Control+a");
+  await page.keyboard.press("Backspace");
+  await page.keyboard.insertText(JSON.stringify(edited));
+  await expect(dialog.locator(".editor-validity")).toHaveText("Valid JSON");
+  const linux = await page.evaluate(() => navigator.userAgent.includes("Linux"));
+  await page.keyboard.press(linux ? "Control+Shift+i" : "Shift+Alt+f");
+  await expect(editor.locator(".line-numbers").filter({ hasText: /^2$/ })).toBeVisible();
+  const plainDownload = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "Download as (plain) .json" }).click();
+  const plainPath = await (await plainDownload).path();
+  const json = await readFile(plainPath!, "utf8");
+  expect(JSON.parse(json)).toEqual(edited);
+  expect(json).toContain("\n");
+
+  const encryptedDownload = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "Download as (encrypted) .dat" }).click();
+  const encryptedPath = await (await encryptedDownload).path();
+  await dialog.getByRole("button", { name: "Close modal" }).click();
+  await page.getByRole("button", { name: "Remove file", exact: true }).click();
+  await page.getByLabel("Upload save file").setInputFiles(encryptedPath!);
+  await expect(page.locator(".summary-currency").first().locator("dd .sr-only")).toHaveText("2345");
+  expect(errors).toEqual([]);
+
+  // Check the actual emitted editor, since Monaco's embedded sanitizer bypasses npm overrides.
+  const assets = await readdir("dist/assets");
+  const editorBundle = assets.find(name => /^LocalSaveEditor-.*\.js$/.test(name));
+  expect(editorBundle).toBeTruthy();
+  const bundle = await readFile(`dist/assets/${editorBundle}`, "utf8");
+  const versions = [...bundle.matchAll(/\.version\s*=\s*["'](3\.\d+\.\d+)["']/g)].map(match => match[1]);
+  expect(versions).toContain("3.4.15");
+  expect(versions).not.toContain("3.4.8");
 });

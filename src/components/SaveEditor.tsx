@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 import type { SaveFileObj } from "@/hooks/useSaveFile";
 import { MenuButton } from "./ui/MenuButton";
-const Editor = lazy(() => import("@monaco-editor/react"));
+const Editor = lazy(() => import("./ui/LocalSaveEditor"));
 export function SaveEditor({ save }: { save: SaveFileObj }) {
   return (
     <>

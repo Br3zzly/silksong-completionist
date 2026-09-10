@@ -20,6 +20,8 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "crypto-js": "^4.2.0",
+    "dompurify": "3.4.15",
+    "monaco-editor": "0.56.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
@@ -44,5 +46,13 @@
     "typescript-eslint": "^8.39.1",
     "vite": "^7.1.2",
     "vitest": "^5.0.0"
+  },
+  "overrides": {
+    "monaco-editor": {
+      "dompurify": "$dompurify"
+    }
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
   }
 }
