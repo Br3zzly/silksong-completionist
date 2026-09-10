@@ -1,10 +1,12 @@
 import { useRef, useState } from "react";
+import type { ReactNode } from "react";
 import type { SaveFileObj } from "@/hooks/useSaveFile";
 import { Modal } from "./ui/Modal";
 import { SaveEditor } from "./SaveEditor";
 import { SaveLocations } from "./SaveLocations";
+import { MenuButton } from "./ui/MenuButton";
 
-export function SaveControls({ save }: { save: SaveFileObj }) {
+export function SaveControls({ save, children }: { save: SaveFileObj; children?: ReactNode }) {
   const input = useRef<HTMLInputElement>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -15,9 +17,9 @@ export function SaveControls({ save }: { save: SaveFileObj }) {
         onDrop={save.handlers.handleDrop}
         onDragOver={save.handlers.handleDragOver}
       >
-        <button type="button" aria-label="Browse for a save file" onClick={() => input.current?.click()}>
+        <MenuButton type="button" aria-label="Browse for a save file" onClick={() => input.current?.click()}>
           {save.state.fileName ? "Replace save" : "Load save"}
-        </button>
+        </MenuButton>
         <input
           ref={input}
           hidden
@@ -29,20 +31,29 @@ export function SaveControls({ save }: { save: SaveFileObj }) {
             event.target.value = "";
           }}
         />
-        <span>{save.state.fileName || "Choose a file or drop it here."}</span>
+        {save.state.fileName && <span>{save.state.fileName}</span>}
         {save.state.isSaveFileDecrypted && (
-          <button type="button" aria-label="Edit save file" onClick={() => setEditorOpen(true)}>
+          <MenuButton type="button" aria-label="Edit save file" onClick={() => setEditorOpen(true)}>
             Edit save
-          </button>
+          </MenuButton>
         )}
         {save.state.fileName && (
-          <button type="button" aria-label="Remove file" onClick={save.handlers.clearFile}>
+          <MenuButton type="button" aria-label="Remove file" onClick={save.handlers.clearFile}>
             Clear
-          </button>
+          </MenuButton>
         )}
-        <button type="button" aria-label="Open help modal about save file locations" onClick={() => setHelpOpen(true)}>
-          Save locations
-        </button>
+        {!save.state.isSaveFileDecrypted && (
+          <>
+            <MenuButton
+              type="button"
+              aria-label="Open help modal about save file locations"
+              onClick={() => setHelpOpen(true)}
+            >
+              Save locations
+            </MenuButton>
+            {children}
+          </>
+        )}
       </div>
       <p role="status">{save.state.errorMessage}</p>
       <Modal isOpen={editorOpen} onClose={() => setEditorOpen(false)} title="Save File Editor">

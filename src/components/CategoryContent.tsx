@@ -1,5 +1,5 @@
 import type { CategorySection, DictMapWithSaveData, NormalizedItem } from "@/dictionary/types";
-import { filterSections, statValue, type Filters } from "@/utils/collection";
+import { filterSections, type Filters } from "@/utils/collection";
 import { MapButton } from "./ui/MapButton";
 import { LazyImage } from "./ui/LazyImage";
 
@@ -98,7 +98,11 @@ function ItemTable({
                     </span>
                   )}
                 </td>
-                {!journal && !bosses && <td>{item.completionPercent ? `+${item.completionPercent}%` : ""}</td>}
+                {!journal && !bosses && (
+                  <td className="completion-percentage">
+                    {item.completionPercent ? `+${item.completionPercent}%` : ""}
+                  </td>
+                )}
                 <td className={blur}>{item.name}</td>
                 {journal ? (
                   <>
@@ -139,21 +143,6 @@ export function CategoryContent({
 }) {
   const category = data.allItems[name];
   if (!category) return <p>Category "{name}" not found.</p>;
-  if (name === "Stats")
-    return (
-      <section>
-        <h2>At a glance...</h2>
-        <Description {...category} spoilers={filters.showSpoilers} />
-        <dl>
-          {Object.values(category.sections.default.act_0).map(item => (
-            <div key={item.name}>
-              <dt>{item.name}</dt>
-              <dd>{statValue(item) || "\u2014"}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
-    );
   const sections = filterSections(category, data, filters, browse);
   const hasItems = sections.some(section => section.items.length);
   const flat = name === "Hunter's Journal" || name === "Bosses";

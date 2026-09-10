@@ -36,3 +36,6 @@ test-results/
 # Generated menu capture plugin files
 /tools/menu-capture/bin/
 /tools/menu-capture/obj/
+
+# Local Codex repository memory
+/AGENTS.md

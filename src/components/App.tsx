@@ -2,15 +2,17 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useSaveFile } from "@/hooks/useSaveFile";
 import { NORMALISED_DICT_MAP } from "@/dictionary";
 import { computeDictMapWithSaveData } from "@/utils/data";
-import { formatPercent } from "@/utils/general";
 import { defaultFilters, type FilterChange } from "@/utils/collection";
 import type { TabId } from "./categories";
 import { footerConfig } from "./links";
 import { SaveControls } from "./SaveControls";
+import { SaveSummary } from "./SaveSummary";
 import { Filters } from "./Filters";
 import { CategoryNavigation } from "./CategoryNavigation";
 import { CategoryContent } from "./CategoryContent";
 import { MenuBackground } from "./MenuBackground";
+import { MenuButton } from "./ui/MenuButton";
+import backToTopArrow from "@/assets/ui/back-to-top.png";
 import titleArtwork from "@/assets/branding/silksong-completionist-title.webp";
 
 export default function App() {
@@ -21,13 +23,20 @@ export default function App() {
   const contentRef = useRef<HTMLElement>(null);
   const previousTab = useRef(activeTab);
   const hasSave = save.state.isSaveFileDecrypted && !!save.state.saveData;
-  const data = useMemo(
-    () => (hasSave || browse ? computeDictMapWithSaveData(NORMALISED_DICT_MAP, save.state.saveData, browse) : null),
-    [hasSave, browse, save.state.saveData]
+  const savedData = useMemo(
+    () => (hasSave ? computeDictMapWithSaveData(NORMALISED_DICT_MAP, save.state.saveData, false) : null),
+    [hasSave, save.state.saveData]
   );
+  const browseData = useMemo(
+    () => (browse ? computeDictMapWithSaveData(NORMALISED_DICT_MAP, null, true) : null),
+    [browse]
+  );
+  const data = browse ? browseData : savedData;
   useEffect(() => {
     setBrowse(false);
     setGlobalFilters(defaultFilters());
+    // Loading resets the selected category without navigating to its content.
+    previousTab.current = "Stats";
     setActiveTab("Stats");
   }, [save.state.loadId]);
   useEffect(() => {
@@ -43,6 +52,7 @@ export default function App() {
   const changeGlobal: FilterChange = (key, value) => setGlobalFilters(previous => ({ ...previous, [key]: value }));
   return (
     <>
+      <MenuBackground />
       <header id="top" className="site-header">
         <h1 className="site-title">
           <img
@@ -56,38 +66,44 @@ export default function App() {
         </h1>
       </header>
       <main>
-        <MenuBackground />
-        <SaveControls save={save} />
-        <button type="button" aria-pressed={browse} onClick={() => setBrowse(!browse)}>
-          {browse ? "Return to save progress" : "Browse all items"}
-        </button>
-        <Filters value={globalFilters} onChange={changeGlobal} browse={browse} disabled={!data} />
-        {data && !browse && (
-          <p>
-            Total completion: <strong>{formatPercent(data.totalCompletedPercent)}</strong>
-          </p>
+        <div className="panel-frame" aria-hidden="true">
+          <span className="panel-corner panel-corner-top-left" />
+          <span className="panel-corner panel-corner-top-right" />
+          <span className="panel-corner panel-corner-bottom-left" />
+          <span className="panel-corner panel-corner-bottom-right" />
+        </div>
+        <div className="save-menu-layout">
+          <div className="save-menu-controls">
+            <SaveControls save={save}>
+              <MenuButton type="button" aria-pressed={browse} onClick={() => setBrowse(!browse)}>
+                {browse ? "Return to save progress" : "Browse all items"}
+              </MenuButton>
+            </SaveControls>
+          </div>
+          <SaveSummary data={savedData} loadId={save.state.loadId} />
+        </div>
+        {data && (
+          <>
+            <Filters value={globalFilters} onChange={changeGlobal} browse={browse} />
+            <CategoryNavigation
+              activeTab={activeTab}
+              onSelect={tab => setActiveTab(tab === activeTab ? "Stats" : tab)}
+              data={data}
+              browse={browse}
+            />
+            <section ref={contentRef} aria-label="Category content">
+              {activeTab !== "Stats" && (
+                <CategoryContent name={activeTab} data={data} filters={globalFilters} browse={browse} />
+              )}
+            </section>
+          </>
         )}
-        <CategoryNavigation
-          activeTab={activeTab}
-          onSelect={tab => setActiveTab(tab === activeTab ? "Stats" : tab)}
-          data={data}
-          browse={browse}
-        />
-        <section ref={contentRef} aria-label="Category content">
-          {data && !(browse && activeTab === "Stats") ? (
-            <CategoryContent name={activeTab} data={data} filters={globalFilters} browse={browse} />
-          ) : (
-            <p>
-              {save.state.isSaveFileDecrypted && !hasSave && !browse
-                ? "This save cannot be used to calculate Silksong progress. You can still edit its JSON."
-                : browse
-                  ? "Choose a category to browse."
-                  : "Load a save file or browse all items."}
-            </p>
-          )}
-        </section>
-        <footer>
-          <a href="#top">Back to top</a>
+        {!browse && save.state.isSaveFileDecrypted && !hasSave && (
+          <p>This save cannot be used to calculate Silksong progress. You can still edit its JSON.</p>
+        )}
+      </main>
+      <footer className="site-footer">
+        <nav className="footer-links" aria-label="Footer links">
           {footerConfig.links.map(link => (
             <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer">
               {link.label}
@@ -100,17 +116,20 @@ export default function App() {
           >
             Silksong
           </a>
-          <span>
-            By <a href={footerConfig.author.url}>{footerConfig.author.name}</a>, with{" "}
-            {footerConfig.contributors.map((person, i) => (
-              <span key={person.url}>
-                {i > 0 && ", "}
-                <a href={person.url}>{person.name}</a>
-              </span>
-            ))}
-          </span>
-        </footer>
-      </main>
+        </nav>
+        <span>
+          By <a href={footerConfig.author.url}>{footerConfig.author.name}</a>, with{" "}
+          {footerConfig.contributors.map((person, i) => (
+            <span key={person.url}>
+              {i > 0 && ", "}
+              <a href={person.url}>{person.name}</a>
+            </span>
+          ))}
+        </span>
+      </footer>
+      <a className="back-to-top" href="#top" aria-label="Back to top" title="Back to top">
+        <img src={backToTopArrow} alt="" width={44} height={44} />
+      </a>
     </>
   );
 }

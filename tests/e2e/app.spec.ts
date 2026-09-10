@@ -1,5 +1,11 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { createCipheriv } from "node:crypto";
+
+async function selectBackground(page: Page, style: string) {
+  const name = style === "song" ? "Switch to Song (dark mode)" : "Switch to Hornet (light mode)";
+  const toggle = page.getByRole("button", { name, exact: true });
+  if (await toggle.count()) await toggle.click();
+}
 
 function saveFile(silk: number, extra: Record<string, unknown> = {}) {
   const cipher = createCipheriv("aes-256-ecb", Buffer.from("UKu52ePUBwetZ9wNX88o54dnfKRu0T1l"), null);
@@ -35,11 +41,17 @@ test("background styles play, loop, and persist on desktop and mobile", async ({
   });
   await page.goto("/");
   const video = page.locator("video.menu-background");
-  const picker = page.getByRole("combobox", { name: "Background", exact: true });
-  await expect(picker).toHaveValue("hornet");
+  const picker = page.locator(".background-toggle");
+  await expect(picker).toHaveAccessibleName("Switch to Song (dark mode)");
+  const toggleBounds = (await picker.boundingBox())!;
+  expect(toggleBounds.width).toBeGreaterThanOrEqual(44);
+  expect(toggleBounds.height).toBeGreaterThanOrEqual(44);
+  expect(toggleBounds.y).toBeLessThanOrEqual(12);
+  expect(page.viewportSize()!.width - toggleBounds.x - toggleBounds.width).toBeLessThanOrEqual(32);
+  await expect(picker.locator("img")).toBeVisible();
   const mobile = page.viewportSize()!.width <= 600;
   for (const style of ["hornet", "song", "hornet", "song"]) {
-    await picker.selectOption(style);
+    await selectBackground(page, style);
     await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime)).toBeGreaterThan(0.1);
     const info = await video.evaluate((element: HTMLVideoElement) => ({
       width: element.videoWidth,
@@ -73,7 +85,7 @@ test("background styles play, loop, and persist on desktop and mobile", async ({
   }
   videos.length = 0;
   await page.reload();
-  await expect(picker).toHaveValue("song");
+  await expect(picker).toHaveAccessibleName("Switch to Hornet (light mode)");
   await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime)).toBeGreaterThan(0.1);
   expect(videos.every(url => url.includes("song-menu"))).toBe(true);
   await expect(page.getByRole("button", { name: /^(Pause|Play) background$/ })).toHaveCount(0);
@@ -81,14 +93,15 @@ test("background styles play, loop, and persist on desktop and mobile", async ({
   await expect(video).toHaveCount(0);
 });
 
-test("background resumes after a mobile picker interruption and stays fixed while scrolling", async ({ page }) => {
+test("background resumes after a browser interruption and stays fixed while scrolling", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
+
   const video = page.locator("video.menu-background");
   const poster = page.locator(".menu-background-poster");
-  await page.getByRole("combobox", { name: "Background", exact: true }).selectOption("song");
+  await selectBackground(page, "song");
   await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime)).toBeGreaterThan(0.1);
-  // Native mobile pickers can suspend media and return focus after change fires.
+  // Returning from another app or browser UI can leave media suspended.
   await video.evaluate((element: HTMLVideoElement) => {
     element.pause();
     window.dispatchEvent(new Event("focus"));
@@ -132,7 +145,7 @@ test("background ignores scrollbar and mobile toolbar size changes", async ({ pa
       await expect.poll(() => video.boundingBox()).toEqual(bounds);
       expect(await poster.boundingBox()).toEqual(bounds);
     }
-    await page.getByRole("combobox", { name: "Background", exact: true }).selectOption("song");
+    await selectBackground(page, "song");
     expect(await video.boundingBox()).toEqual(bounds);
   } else {
     // Force a classic scrollbar so this also catches shifts on overlay-scrollbar systems.
@@ -177,7 +190,7 @@ test("mobile zoom keeps both backgrounds covering an expanded viewport", async (
   for (const reducedMotion of ["no-preference", "reduce"] as const) {
     await page.emulateMedia({ reducedMotion });
     for (const style of ["hornet", "song"]) {
-      await page.getByRole("combobox", { name: "Background", exact: true }).selectOption(style);
+      await selectBackground(page, style);
       for (const scale of [2, 4, 1]) {
         await session.send("Emulation.setPageScaleFactor", { pageScaleFactor: scale });
         await expect.poll(() => page.evaluate(() => window.visualViewport!.scale)).toBe(scale);
@@ -204,10 +217,16 @@ test("reduced motion uses the still background without downloading a video", asy
   await expect(page.locator("video.menu-background")).toHaveCount(0);
   const poster = page.locator(".menu-background-poster");
   await expect(poster).toHaveCSS("background-image", /hornet-menu/);
-  await page.getByRole("combobox", { name: "Background", exact: true }).selectOption("song");
+  await selectBackground(page, "song");
   await expect(poster).toHaveCSS("background-image", /song-menu/);
   await expect(page.locator("video.menu-background")).toHaveCount(0);
   expect(videos).toEqual([]);
+  const toggle = page.getByRole("button", { name: "Switch to Hornet (light mode)", exact: true });
+  await toggle.focus();
+  await page.keyboard.press("Enter");
+  await expect(poster).toHaveCSS("background-image", /hornet-menu/);
+  await page.keyboard.press("Space");
+  await expect(poster).toHaveCSS("background-image", /song-menu/);
 });
 
 test("browse every category, preserve images, and reach the end of the journal", async ({ page }) => {
@@ -295,22 +314,156 @@ test("upload, replace the same filename, clear, and recover from invalid files",
   await page.goto("/");
   const input = page.getByLabel("Upload save file");
   await input.setInputFiles(saveFile(0));
-  await expect(page.getByRole("heading", { name: "At a glance..." })).toBeVisible();
+  await expect(page.locator('.save-summary[data-loaded="true"]')).toBeVisible();
   await page.getByRole("button", { name: "Switch to Mask Shards tab" }).click();
   await expect(page.getByRole("table")).toBeVisible();
   await input.setInputFiles(saveFile(10));
-  await expect(page.getByRole("heading", { name: "At a glance..." })).toBeVisible();
+  await expect(page.locator('.save-summary[data-loaded="true"]')).toBeVisible();
   await input.setInputFiles({
     name: "broken.dat",
     mimeType: "application/octet-stream",
     buffer: Buffer.from("broken"),
   });
   await expect(page.getByText("This file is in an unsupported format.")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "At a glance..." })).not.toBeVisible();
+  await expect(page.locator('.save-summary[data-loaded="true"]')).not.toBeVisible();
   await input.setInputFiles(saveFile(0));
-  await expect(page.getByRole("heading", { name: "At a glance..." })).toBeVisible();
+  await expect(page.locator('.save-summary[data-loaded="true"]')).toBeVisible();
   await page.getByRole("button", { name: "Remove file" }).click();
-  await expect(page.getByRole("heading", { name: "At a glance..." })).not.toBeVisible();
+  await expect(page.locator('.save-summary[data-loaded="true"]')).not.toBeVisible();
+});
+
+test("loading a save resets the category without scrolling away from the menu", async ({ page }) => {
+  await page.goto("/");
+  const input = page.getByLabel("Upload save file");
+  const overview = page.locator('.save-summary[data-loaded="true"]');
+  const position = () => page.evaluate(() => ({ x: scrollX, y: scrollY }));
+  const initialPosition = await position();
+  await input.setInputFiles(saveFile(0));
+  await expect(overview).toBeAttached();
+  await expect.poll(position).toEqual(initialPosition);
+
+  for (const browse of [false, true]) {
+    if (browse) {
+      await page.getByRole("button", { name: "Remove file" }).click();
+      await page.getByRole("button", { name: "Browse all items", exact: true }).click();
+    }
+    await page.getByRole("button", { name: "Switch to Mask Shards tab" }).click();
+    await expect(page.getByRole("table")).toBeAttached();
+    await page.getByRole("button", { name: "Browse for a save file" }).scrollIntoViewIfNeeded();
+    const beforeLoad = await position();
+    await input.setInputFiles(saveFile(10));
+    await expect(overview).toBeAttached();
+    await expect.poll(position).toEqual(beforeLoad);
+    await expect(page.getByRole("button", { name: "Switch to Mask Shards tab" })).toHaveAttribute(
+      "aria-pressed",
+      "false"
+    );
+  }
+});
+
+test("save summary shows saved stats and landing options return only after clearing", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const summary = page.getByRole("region", { name: "Save summary" });
+  const currencies = summary.locator(".summary-currency dd > [aria-hidden]");
+  const playtime = summary.locator(".summary-playtime dd > [aria-hidden]");
+  const mode = summary.locator(".summary-game-mode dd");
+  const locations = page.getByRole("button", { name: "Open help modal about save file locations" });
+  const browse = page.getByRole("button", { name: "Browse all items", exact: true });
+  const checkLayout = async () => {
+    const menu = (await page.locator(".save-menu-controls").boundingBox())!;
+    const stats = (await summary.boundingBox())!;
+    const panel = (await page.locator("main").boundingBox())!;
+    expect(Math.abs(menu.x + menu.width / 2 - (panel.x + panel.width / 2))).toBeLessThan(1);
+    if (page.viewportSize()!.width <= 1000) expect(stats.y).toBeGreaterThanOrEqual(menu.y + menu.height);
+    else {
+      expect(stats.x + stats.width).toBeLessThan(menu.x);
+      expect(stats.y).toBe(menu.y);
+    }
+    const rows = summary.locator(".summary-stats > div");
+    for (let i = 1; i < (await rows.count()); i++) {
+      const previous = (await rows.nth(i - 1).boundingBox())!;
+      const current = (await rows.nth(i).boundingBox())!;
+      expect(current.y).toBeGreaterThanOrEqual(previous.y + previous.height);
+      expect(current.x).toBe(previous.x);
+    }
+  };
+  await expect(summary).toHaveAttribute("data-loaded", "false");
+  await expect(currencies).toHaveText(["-", "-"]);
+  await expect(playtime).toHaveText("0H 0M");
+  await expect(mode).toHaveCount(0);
+  await checkLayout();
+  await expect(locations).toBeVisible();
+  await expect(browse).toBeVisible();
+  await browse.click();
+  const input = page.getByLabel("Upload save file");
+  await input.setInputFiles(saveFile(0, { geo: 120, ShellShards: 700, playTime: 90061 }));
+  await expect(currencies).toHaveText(["120", "700"]);
+  await expect(playtime).toHaveText("25H 1M");
+  await expect(mode).toHaveText("Classic");
+  await expect(mode.locator("img")).toHaveAttribute("src", /classic/);
+  await checkLayout();
+  await expect(page.getByRole("heading", { name: "At a glance..." })).toHaveCount(0);
+  await expect(locations).toHaveCount(0);
+  await expect(browse).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Return to save progress", exact: true })).toHaveCount(0);
+  await input.setInputFiles(saveFile(0, { geo: 0, ShellShards: 0, playTime: 0, permadeathMode: 2 }));
+  await expect(currencies).toHaveText(["0", "0"]);
+  await expect(playtime).toHaveText("0H 0M");
+  await expect(mode).toHaveText("Steel Soul (Dead)");
+  await expect(mode.locator("img")).toHaveAttribute("src", /steel-soul/);
+  await page.getByRole("button", { name: "Remove file" }).click();
+  await expect(summary).toHaveAttribute("data-loaded", "false");
+  await expect(currencies).toHaveText(["-", "-"]);
+  await expect(playtime).toHaveText("0H 0M");
+  await expect(mode).toHaveCount(0);
+  await expect(mode.locator("img")).toHaveCount(0);
+  await expect(locations).toBeVisible();
+  await expect(browse).toBeVisible();
+  await browse.click();
+  await expect(page.getByRole("button", { name: "Switch to Mask Shards tab" })).toBeVisible();
+});
+
+test("silk fill and percentage count up together and finish on the saved values", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  await page.evaluate(() => document.fonts.ready);
+  await page
+    .getByLabel("Upload save file")
+    .setInputFiles(saveFile(0, { geo: 400, ShellShards: 700, playTime: 3661, PurchasedBonebottomHeartPiece: true }));
+  await expect(page.locator('.save-summary[data-loaded="true"]')).toBeVisible();
+  await page.evaluate(() => {
+    const samples: number[][] = [];
+    const start = performance.now();
+    (window as typeof window & { spoolSamples: number[][] }).spoolSamples = samples;
+    const sample = () => {
+      const box = document.querySelector(".summary-spool")!.getBoundingClientRect();
+      samples.push([box.x, box.y, box.width, box.height]);
+      if (performance.now() - start < 2400) requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+  });
+  const summary = page.getByRole("region", { name: "Save summary" });
+  const rosaries = summary.locator(".summary-currency dd > [aria-hidden]").first();
+  await expect.poll(async () => Number(await rosaries.textContent())).toBeGreaterThan(0);
+  expect(Number(await rosaries.textContent())).toBeLessThan(400);
+  const sync = await summary.evaluate(element => ({
+    percentage: element.querySelector(".summary-percentage")!.textContent,
+    fill: (element.querySelector(".summary-spool") as HTMLElement).style.getPropertyValue("--silk-fill"),
+  }));
+  expect(sync.fill).toBe(sync.percentage);
+  await expect(rosaries).toHaveText("400");
+  await expect(summary.locator(".summary-percentage")).toHaveText("0.25%");
+  await expect(summary.locator(".summary-playtime dd > [aria-hidden]")).toHaveText("1H 1M");
+  await expect(summary.locator(".summary-spool")).toHaveCSS("--silk-fill", "0.25%");
+  await expect(summary.locator(".summary-spool")).toHaveAttribute("data-glowing", "true");
+  await expect(summary.locator(".summary-silk-winding")).toHaveCount(0);
+  const samples = await page.evaluate(() => (window as typeof window & { spoolSamples: number[][] }).spoolSamples);
+  expect(samples.length).toBeGreaterThan(10);
+  for (let dimension = 0; dimension < 4; dimension++) {
+    const values = samples.map(sample => sample[dimension]);
+    expect(Math.max(...values) - Math.min(...values)).toBeLessThan(0.1);
+  }
 });
 
 test("upload surface works with keyboard and drag-and-drop", async ({ page }) => {
@@ -321,7 +474,7 @@ test("upload surface works with keyboard and drag-and-drop", async ({ page }) =>
   await page.keyboard.press("Enter");
   const chooser = await chooserPromise;
   await chooser.setFiles(saveFile(0));
-  await expect(page.getByRole("heading", { name: "At a glance..." })).toBeVisible();
+  await expect(page.locator('.save-summary[data-loaded="true"]')).toBeVisible();
   await page.getByRole("button", { name: "Remove file" }).click();
   const bytes = Array.from(saveFile(12).buffer);
   const transfer = await page.evaluateHandle(data => {
@@ -331,7 +484,7 @@ test("upload surface works with keyboard and drag-and-drop", async ({ page }) =>
   }, bytes);
   await browse.dispatchEvent("drop", { dataTransfer: transfer });
   await expect(page.getByText("dropped.dat")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "At a glance..." })).toBeVisible();
+  await expect(page.locator('.save-summary[data-loaded="true"]')).toBeVisible();
 });
 
 test("one global filter applies across categories and preserves quill information", async ({ page }) => {

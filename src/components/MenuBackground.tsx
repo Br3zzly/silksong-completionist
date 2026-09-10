@@ -5,6 +5,7 @@ import hornetMobile from "@/assets/backgrounds/hornet-menu-mobile.mp4";
 import songPoster from "@/assets/backgrounds/song-menu.webp";
 import songDesktop from "@/assets/backgrounds/song-menu.mp4";
 import songMobile from "@/assets/backgrounds/song-menu-mobile.mp4";
+import filledOrb from "@/assets/ui/silk-orb-filled.png";
 
 const backgrounds = {
   hornet: { label: "Hornet", poster: hornetPoster, desktop: hornetDesktop, mobile: hornetMobile },
@@ -25,6 +26,8 @@ export function MenuBackground() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const layerRef = useRef<HTMLDivElement>(null);
   const background = backgrounds[style];
+  const nextStyle = style === "hornet" ? "song" : "hornet";
+  const switchLabel = `Switch to ${backgrounds[nextStyle].label} (${nextStyle === "song" ? "dark" : "light"} mode)`;
 
   useLayoutEffect(() => {
     const layer = layerRef.current;
@@ -101,7 +104,7 @@ export function MenuBackground() {
       else void video.play().catch(() => {}); // The poster remains if autoplay is unavailable.
     };
     // Reuse the player when switching styles and explicitly reload its sources.
-    // Mobile browsers can suspend playback while their native selector is open.
+    // Resume playback when the browser returns from an interruption.
     video.addEventListener("canplay", update);
     window.addEventListener("focus", update);
     window.addEventListener("pageshow", update);
@@ -143,16 +146,15 @@ export function MenuBackground() {
           </video>
         )}
       </div>
-      <label className="background-picker">
-        Background
-        <select value={style} onChange={event => changeStyle(event.target.value as BackgroundStyle)}>
-          {Object.entries(backgrounds).map(([value, { label }]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
+      <button
+        type="button"
+        className="background-toggle"
+        aria-label={switchLabel}
+        title={switchLabel}
+        onClick={() => changeStyle(nextStyle)}
+      >
+        <img src={filledOrb} className={style === "song" ? "silk-orb-dark" : undefined} alt="" width={44} height={44} />
+      </button>
     </>
   );
 }

@@ -123,5 +123,5 @@ it("preserves active tab and filters while editing, updates progress immediately
   fireEvent.click(screen.getByRole("button", { name: "Close modal" }));
   fireEvent.change(upload, { target: { files: [new File([], "save.dat")] } });
   act(() => Reader.pending[1].finish(save));
-  expect(screen.getByRole("heading", { name: "At a glance..." })).toBeTruthy();
+  expect(screen.getByRole("region", { name: "Save summary" }).getAttribute("data-loaded")).toBe("true");
 });
