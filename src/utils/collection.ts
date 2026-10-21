@@ -1,5 +1,7 @@
 import type { DictMapWithSaveData, NormalizedCategory, NormalizedItem, NormalizedSection } from "@/dictionary";
+import type { ItemPath } from "@/dictionary/types";
 import { formatPercent, formatSecondsToHMS } from "./general";
+import { itemPath } from "./data";
 
 export type Act = 1 | 2 | 3;
 export interface Filters {
@@ -13,7 +15,8 @@ export const defaultFilters = (): Filters => ({
   actFilter: new Set([1, 2, 3]),
 });
 export type FilterChange = <K extends keyof Filters>(key: K, value: Filters[K]) => void;
-export type SectionWithItems = NormalizedSection & { items: NormalizedItem[] };
+export type ItemWithPath = NormalizedItem & { path: ItemPath };
+export type SectionWithItems = NormalizedSection & { items: ItemWithPath[] };
 
 export function filterSections(
   category: NormalizedCategory,
@@ -27,8 +30,8 @@ export function filterSections(
     items: ([0, 1, 2, 3] as const).flatMap(act => {
       if (act !== 0 && !filters.actFilter.has(act)) return [];
       return Object.entries(section[`act_${act}`])
-        .filter(([name]) => !missing || missing.has(`${category.name}.${sectionName}.act_${act}.${name}`))
-        .map(([, item]) => item);
+        .map(([name, item]) => ({ ...item, path: itemPath(category.name, sectionName, `act_${act}`, name) }))
+        .filter(item => !missing || missing.has(item.path));
     }),
   }));
 }

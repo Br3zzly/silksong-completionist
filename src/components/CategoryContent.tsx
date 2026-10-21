@@ -1,5 +1,5 @@
-import type { CategorySection, DictMapWithSaveData, NormalizedItem } from "@/dictionary/types";
-import { filterSections, type Filters } from "@/utils/collection";
+import type { CategorySection, DictMapWithSaveData, ItemPath, NormalizedItem } from "@/dictionary/types";
+import { filterSections, type Filters, type ItemWithPath } from "@/utils/collection";
 import { MapButton } from "./ui/MapButton";
 import { LazyImage } from "./ui/LazyImage";
 import { TAB_GROUPS } from "./categories";
@@ -40,18 +40,35 @@ function EntryImage({ item, journal }: { item: NormalizedItem; journal: boolean 
   );
 }
 
+function CollectionStatus({ item, journal, bosses }: { item: NormalizedItem; journal: boolean; bosses: boolean }) {
+  if (journal || bosses) return <EntryImage item={item} journal={journal} />;
+  const collected = item.saveMeta?.unlocked;
+  return (
+    <img
+      className="collection-status"
+      src={collected ? collectedFull : collectedEmpty}
+      alt={collected ? "Collected" : "Not collected"}
+      title={collected ? "Collected" : "Not collected"}
+      width={24}
+      height={24}
+    />
+  );
+}
+
 function ItemTable({
   items,
   categoryName,
   sectionName,
   spoilers,
   browse,
+  onToggle,
 }: {
-  items: NormalizedItem[];
+  items: ItemWithPath[];
   categoryName: string;
   sectionName?: string;
   spoilers: boolean;
   browse: boolean;
+  onToggle?: (path: ItemPath) => void;
 }) {
   const journal = categoryName === "Hunter's Journal",
     bosses = categoryName === "Bosses";
@@ -66,7 +83,7 @@ function ItemTable({
             <th scope="col">Name</th>
             {journal ? (
               <>
-                {!browse && <th scope="col">Kills Achieved</th>}
+                {!browse && !onToggle && <th scope="col">Kills Achieved</th>}
                 <th scope="col">Kills Required</th>
               </>
             ) : (
@@ -80,7 +97,8 @@ function ItemTable({
         </thead>
         <tbody>
           {items.map((item, index) => {
-            const blur = !item.saveMeta?.unlocked && !spoilers ? "spoiler" : undefined;
+            const collected = !!item.saveMeta?.unlocked;
+            const blur = !collected && !spoilers ? "spoiler" : undefined;
             const meta = item.additionalMeta;
             const related = meta?.completesEntries?.length
               ? `This entry also completes: ${meta.completesEntries.join(", ")}`
@@ -94,17 +112,19 @@ function ItemTable({
                 title={journal ? related : undefined}
               >
                 <td className={journal || bosses ? blur : undefined}>
-                  {journal || bosses ? (
-                    <EntryImage item={item} journal={journal} />
+                  {onToggle ? (
+                    <button
+                      type="button"
+                      className="collection-toggle"
+                      aria-pressed={collected}
+                      aria-label={`${collected ? "Unmark" : "Mark"} ${item.name} as ${journal || bosses ? "completed" : "collected"}`}
+                      title={collected ? "Click to unmark" : "Click to mark"}
+                      onClick={() => onToggle(item.path)}
+                    >
+                      <CollectionStatus item={item} journal={journal} bosses={bosses} />
+                    </button>
                   ) : (
-                    <img
-                      className="collection-status"
-                      src={item.saveMeta?.unlocked ? collectedFull : collectedEmpty}
-                      alt={item.saveMeta?.unlocked ? "Collected" : "Not collected"}
-                      title={item.saveMeta?.unlocked ? "Collected" : "Not collected"}
-                      width={24}
-                      height={24}
-                    />
+                    <CollectionStatus item={item} journal={journal} bosses={bosses} />
                   )}
                 </td>
                 {showCompletion && (
@@ -115,7 +135,7 @@ function ItemTable({
                 <td className={blur}>{item.name}</td>
                 {journal ? (
                   <>
-                    {!browse && <td className={blur}>{item.saveMeta?.journalMeta?.killsAchieved ?? 0}</td>}
+                    {!browse && !onToggle && <td className={blur}>{item.saveMeta?.journalMeta?.killsAchieved ?? 0}</td>}
                     <td className={blur}>{meta?.killsRequired ?? "N/A"}</td>
                   </>
                 ) : (
@@ -144,11 +164,13 @@ export function CategoryContent({
   data,
   filters,
   browse,
+  onToggle,
 }: {
   name: string;
   data: DictMapWithSaveData;
   filters: Filters;
   browse: boolean;
+  onToggle?: (path: ItemPath) => void;
 }) {
   const category = data.allItems[name];
   if (!category) return <p>Category "{name}" not found.</p>;
@@ -167,6 +189,7 @@ export function CategoryContent({
           categoryName={name}
           spoilers={filters.showSpoilers}
           browse={browse}
+          onToggle={onToggle}
         />
       ) : (
         sections
@@ -183,13 +206,15 @@ export function CategoryContent({
                   />
                 </>
               )}
-              {section.name !== "Quills" && (
+              {/* Quills are summarised by their description, but manual tracking needs a row to tick. */}
+              {(section.name !== "Quills" || onToggle) && (
                 <ItemTable
                   items={section.items}
                   categoryName={name}
                   sectionName={sections.length > 1 ? section.name : undefined}
                   spoilers={filters.showSpoilers}
                   browse={browse}
+                  onToggle={onToggle}
                 />
               )}
             </section>
