@@ -1,6 +1,7 @@
-import { createSaveParser, isItemInCurrentGameMode } from "@/dictionary/parsers";
+import { createSaveParser, isItemInCurrentGameMode, type ParseResult } from "@/dictionary/parsers";
 import type {
   NormalisedDictMap,
+  NormalizedItem,
   NormalizedCategory,
   NormalizedSection,
   DictMapWithSaveData,
@@ -25,8 +26,38 @@ export function computeDictMapWithSaveData(
 
   if (!parsedJson) throw new Error("Validated save data is required to compute progress.");
   const parseItem = createSaveParser(parsedJson);
+  return computeProgress(normalisedDict, item =>
+    isItemInCurrentGameMode(item, parsedJson) ? parseItem(item.parsingInfo) : null
+  );
+}
 
-  // Filter by given save file's current game mode first, then track missing/completed items
+export type ManualGameMode = "classic" | "steelSoul";
+
+// Manual tracking has no save to read, so collection comes from the user's ticked item paths.
+export function computeDictMapWithManualData(
+  normalisedDict: NormalisedDictMap,
+  collected: ReadonlySet<ItemPath>,
+  gameMode: ManualGameMode
+): DictMapWithSaveData {
+  const isClassic = gameMode === "classic";
+  return computeProgress(normalisedDict, (item, path) => {
+    if ((item.onlyFoundInSteelSoulMode && isClassic) || (item.onlyFoundInClassicMode && !isClassic)) return null;
+    if (item.name === "Game Mode") return { unlocked: false, returnValue: isClassic ? 0 : 1 };
+    const unlocked = collected.has(path);
+    const killsRequired = item.additionalMeta?.killsRequired;
+    return killsRequired === undefined ? { unlocked } : { unlocked, returnValue: unlocked ? killsRequired : 0 };
+  });
+}
+
+export const itemPath = (categoryName: string, sectionName: string, actKey: string, itemName: string): ItemPath =>
+  `${categoryName}.${sectionName}.${actKey}.${itemName}`;
+
+// Returning null from resolveItem excludes the item, e.g. when it belongs to another game mode.
+function computeProgress(
+  normalisedDict: NormalisedDictMap,
+  resolveItem: (item: NormalizedItem, path: ItemPath) => ParseResult | null
+): DictMapWithSaveData {
+  // Filter by the current game mode first, then track missing/completed items
   let totalCompletedPercent = 0;
   const allItemsFilteredByGameMode: NormalisedDictMap = {};
   const missingItemPaths: ItemPath[] = [];
@@ -65,11 +96,11 @@ export function computeDictMapWithSaveData(
 
       for (const actKey of ["act_0", "act_1", "act_2", "act_3"] as const) {
         for (const [itemName, item] of Object.entries(section[actKey])) {
-          if (!isItemInCurrentGameMode(item, parsedJson)) {
-            continue; // Skip items not in current game mode
-          }
+          const path = itemPath(categoryName, sectionName, actKey, itemName);
+          const result = resolveItem(item, path);
+          if (!result) continue; // Skip items not in current game mode
 
-          const { unlocked, returnValue } = parseItem(item.parsingInfo);
+          const { unlocked, returnValue } = result;
           const killsAchieved = typeof returnValue === "number" ? returnValue : undefined;
 
           const isJournalEntry =
@@ -103,14 +134,12 @@ export function computeDictMapWithSaveData(
           sectionFilteredByGameMode.totalCount++;
           sectionFilteredByGameMode.totalPercent += item.completionPercent ?? 0;
 
-          const itemPath: ItemPath = `${categoryName}.${sectionName}.${actKey}.${itemName}`;
-
           if (!unlocked || (isJournalEntry && !isJournalEntryComplete)) {
-            missingItemPaths.push(itemPath);
+            missingItemPaths.push(path);
             continue;
           }
 
-          completedItemPaths.push(itemPath);
+          completedItemPaths.push(path);
           categoryCompletedCount++;
           categoryCompletedPercent += item.completionPercent ?? 0;
         }

@@ -852,6 +852,19 @@ th {
   opacity: 1;
   filter: drop-shadow(0 0 3px rgb(255 255 255 / 55%));
 }
+.collection-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 4px;
+}
+.collection-toggle[aria-pressed="true"]::before {
+  content: none;
+}
+.collection-toggle:is(:hover, :focus-visible) img {
+  filter: drop-shadow(0 0 3px rgb(255 255 255 / 55%));
+}
 .entry-image img {
   width: 48px;
   height: 48px;
